@@ -17,12 +17,12 @@ public class Counter {
         for (Record rec: list1) {
             String key = rec.blockingKey();
 
-            if (!index.containsKey(key)) {
+            if (index.containsKey(key)) {
+                index.get(key).add(rec);
+            } else {
                 LinkedList<Record> ll = new LinkedList<>();
                 ll.add(rec);
                 index.put(key, ll);
-            } else {
-                index.get(key).add(rec);
             }
         }
 

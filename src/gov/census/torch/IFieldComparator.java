@@ -9,4 +9,5 @@ package gov.census.torch;
  */
 public interface IFieldComparator {
     public int compare(Field field1, Field field2);
+    public int nLevels();
 }
