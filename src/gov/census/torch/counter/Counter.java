@@ -8,8 +8,12 @@ import java.util.LinkedList;
 
 public class Counter {
 
-    public HashMap<int[], Integer> countPatterns(LinkedList<Record> list1, LinkedList<Record> list2) {
-        HashMap<int[], Integer> counts = new HashMap<>();
+    public Counter(RecordComparator comparator) {
+        this.comparator = comparator;
+        this._counts = new HashMap<>();
+    }
+
+    public void countPatterns(LinkedList<Record> list1, LinkedList<Record> list2) {
 
         // Create an index on list1
 
@@ -38,16 +42,19 @@ public class Counter {
                 for (Record otherRec: thisBlock) {
                     int[] pattern = comparator.compare(rec, otherRec);
 
-                    if (counts.containsKey(pattern)) {
-                        int oldCount = counts.get(pattern);
-                        counts.put(pattern, oldCount + 1);
+                    if (_counts.containsKey(pattern)) {
+                        int oldCount = _counts.get(pattern);
+                        _counts.put(pattern, oldCount + 1);
                     }
                 }
             }
         }
+    }
 
-        return counts;
+    public HashMap<int[], Integer> counts() {
+        return _counts;
     }
 
     private RecordComparator comparator;
+    private HashMap<int[], Integer> _counts;
 }

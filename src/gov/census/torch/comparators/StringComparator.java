@@ -137,6 +137,10 @@ public class StringComparator implements IFieldComparator {
         this.levels = levels;
     }
 
+    public StringComparator(double[] levels) {
+        this(levels, 0);
+    }
+
     /*
      * There are a lot of magic numbers in this function, try to replace these.
      */
