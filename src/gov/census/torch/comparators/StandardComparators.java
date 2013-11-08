@@ -15,7 +15,6 @@ public class StandardComparators {
 
     public final static IFieldComparator EXACT = ExactComparator.INSTANCE;
 
-
     public final static double[] PRO_SLOPE = {0.1, 0.2, 0.4};
     public final static double[] PRO_INTERCEPT = {1.1, 1.0, 1.0};
     public final static IFieldComparator PRORATED = new ProratedComparator(PRO_SLOPE, PRO_INTERCEPT);

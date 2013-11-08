@@ -51,5 +51,5 @@ public class ProratedComparator implements IFieldComparator {
         return slope.length + 1;
     }
 
-    private double[] slope, intercept;
+    private final double[] slope, intercept;
 }

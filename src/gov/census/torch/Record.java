@@ -1,5 +1,7 @@
 package gov.census.torch;
 
+import java.util.Arrays;
+
 /**
  * A Record consists of several Fields, a blocking key, and, optionally, an id.
  */
@@ -8,7 +10,7 @@ public class Record {
     public Record(String blockingKey, String id, Field[] fields) {
         this._blockingKey = blockingKey;
         this._id = id;
-        this._fields = fields;
+        this._fields = Arrays.copyOf(fields, fields.length);
     }
 
     public Field field(int i) {
@@ -27,7 +29,7 @@ public class Record {
         return _fields.length;
     }
 
-    private String _blockingKey;
-    private String _id;
-    private Field[] _fields;
+    private final String _blockingKey;
+    private final String _id;
+    private final Field[] _fields;
 }

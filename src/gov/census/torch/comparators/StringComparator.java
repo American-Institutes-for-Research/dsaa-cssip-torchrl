@@ -5,9 +5,9 @@ import gov.census.torch.IFieldComparator;
 
 public class StringComparator implements IFieldComparator {
 
-    public final int ADJ_SIMILAR_CHARACTER = 1;
-    public final int ADJ_WINKLER_PREFIX = 2;
-    public final int ADJ_LONG_STRINGS = 4;
+    public final static int ADJ_SIMILAR_CHARACTER = 1;
+    public final static int ADJ_WINKLER_PREFIX = 2;
+    public final static int ADJ_LONG_STRINGS = 4;
 
     public final static char[][] simiChars = {
             {'A','E'}, {'A','I'}, {'A','O'},
@@ -52,7 +52,7 @@ public class StringComparator implements IFieldComparator {
         int nCommon = 0;
 
         int lo, hi;
-        for (int i = 0; i < searchRange; i++) {
+        for (int i = 0; i < s1.length(); i++) {
             if (i > searchRange)
                 lo = i - searchRange;
             else
@@ -104,7 +104,7 @@ public class StringComparator implements IFieldComparator {
 
     /**
      * The number of similar characters is the number of common characters plus
-     * 0.3 for each pair of chraacters that appears in simiChars. A letter in
+     * 0.3 for each pair of characters that appears in simiChars. A letter in
      * s1 can match multiple letters in s2.
      */
     private static int countSimilar(String s1, String s2, int minLen, int nCommon,
@@ -164,7 +164,7 @@ public class StringComparator implements IFieldComparator {
 
         // count the number of characters in common and set flags arrays
         // indicating their positions.
-        boolean[] flag1 = new boolean[s1.length()]; // java initializes this array to false
+        boolean[] flag1 = new boolean[s1.length()];
         boolean[] flag2 = new boolean[s2.length()];
         int nCommon = countCommon(s1, s2, flag1, flag2, maxLen);
 
@@ -238,7 +238,6 @@ public class StringComparator implements IFieldComparator {
         return this.levels.length;
     }
 
-    private double[] levels;
-    private boolean adjSimilarCharacter, adjWinklerPrefix, adjLongStrings;
-    private double weight;
+    private final double[] levels;
+    private final boolean adjSimilarCharacter, adjWinklerPrefix, adjLongStrings;
 }
