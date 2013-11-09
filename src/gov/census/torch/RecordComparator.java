@@ -78,7 +78,7 @@ public class RecordComparator {
         this.fieldIndex1 = Arrays.copyOf(fieldIndex1, nComparators);
         this.fieldIndex2 = Arrays.copyOf(fieldIndex2, nComparators);
         this.comparators = Arrays.copyOf(comparators, nComparators);
-        this.handleBlanks = handleBlanks;
+        this._handleBlanks = handleBlanks;
         this.levelOffset = handleBlanks ? 1 : 0;
 
         int nPatterns = 1;
@@ -92,7 +92,7 @@ public class RecordComparator {
             nPatterns *= nLevels;
 
             if (i > 0)
-                this.steps[i] = this.steps[i - 1] * nLevels;
+                this.steps[i] = this.steps[i - 1] * this.comparators[i - 1].nLevels();
         }
 
         this._nPatterns = nPatterns;
@@ -113,7 +113,7 @@ public class RecordComparator {
 
             // short circuit evaluation if either of the fields is blank
             if (isBlank(field1) || isBlank(field2)) {
-                if (this.handleBlanks)
+                if (this._handleBlanks)
                     pattern[i] = BLANK;
                 else
                     pattern[i] = DISAGREE;
@@ -145,6 +145,10 @@ public class RecordComparator {
         int[] pattern = compare(rec1, rec2);
 
         return patternIndex(pattern);
+    }
+
+    public boolean handleBlanks() {
+        return _handleBlanks;
     }
 
     public int nComparators() {
@@ -184,7 +188,7 @@ public class RecordComparator {
     private final int[] fieldIndex2;
     private final IFieldComparator[] comparators;
     private final int _nPatterns;
-    private final boolean handleBlanks;
+    private final boolean _handleBlanks;
     private final int[] levels, steps;
     private final int levelOffset;
 }

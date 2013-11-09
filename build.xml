@@ -8,6 +8,8 @@
     <property name="build" location="build"/>
     <property name="lib" location="lib"/>
     <property name="classpath" value=""/>
+    <property name="test-classpath" 
+        value="${classpath}:${lib}/junit.jar:${lib}/hamcrest-core.jar" />
 
     <property name="debug" value="true" />
 
@@ -20,9 +22,32 @@
           description="compile the source " >
       <!-- Compile the java code from ${src} into ${build} -->
       <javac srcdir="${src}" destdir="${build}" classpath="${classpath}"
-          includeantruntime="false" debug="${debug}" />
+          includeantruntime="false" debug="${debug}" excludes="gov/census/torch/test/*" />
     </target>
 
+    <target name="compileTests" depends="compile" description="compile unit tests">
+        <javac srcdir="${src}" destdir="${build}" classpath="${test-classpath}"
+            includeantruntime="false" debug="${debug}" includes="gov/census/torch/test/*" />
+    </target>
+
+    <target name="test" depends="compileTests" description="run unit tests">
+        <mkdir dir="test_results" />
+
+        <junit printsummary="yes" haltonfailure="yes">
+            <classpath>
+                <pathelement path="${test-classpath}" />
+                <pathelement location="${build}" />
+            </classpath>
+            <formatter type="plain" />
+            
+            <batchtest fork="yes" todir="test_results">
+                <fileset dir="${build}">
+                    <include name="**/*Test*.class" />
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+  
     <target name="extractDeps" depends="init"
         description="extract dependencies from libary jars into the build directory">
 
