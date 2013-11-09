@@ -61,7 +61,7 @@
     <target name="copyResources" depends="init"
         description="copy the resources directory to the build directory">
         <copy todir="${build}/gov/census/torch">
-            <fileset dir="resources" includes="*.xsd"/>
+            <fileset dir="resources" includes="*.js"/>
         </copy>
     </target>
 
@@ -70,7 +70,7 @@
       <!-- Put everything in ${build} into the MHSampler.jar file -->
       <jar jarfile="torch.jar" basedir="${build}">
           <manifest>
-              <attribute name="Main-Class" value="gov.census.torch.App" />
+              <attribute name="Main-Class" value="gov.census.torch.ScriptRunner" />
           </manifest>
       </jar>
     </target>
