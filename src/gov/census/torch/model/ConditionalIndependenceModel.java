@@ -1,5 +1,6 @@
 package gov.census.torch.model;
 
+import gov.census.torch.Record;
 import gov.census.torch.counter.Counter;
 import gov.census.torch.RecordComparator;
 
@@ -11,24 +12,34 @@ public class ConditionalIndependenceModel {
     public final static double TOLERANCE = 0.0000001;
     public final static int MAX_ITER = 500;
 
-    public ConditionalIndependenceModel(Random rng, Counter counter, int nClasses)
+    public ConditionalIndependenceModel(Random rng, Counter counter, int nClasses, int nMatchClasses)
     {
         if (nClasses < 1)
             throw new IllegalArgumentException("'nClasses' must be greater than 0");
 
+        if (nClasses <= nMatchClasses)
+            throw new IllegalArgumentException("must have at least one nonmatch class");
+
         _nClasses = nClasses;
+        _nMatchClasses = nMatchClasses;
         _cmp = counter.recordComparator();
 
-        _matchWeights = new double[nClasses][_cmp.nComparators()][];
+        _mWeights = new double[nClasses][_cmp.nComparators()][];
+        _logMWeights = new double[nClasses][_cmp.nComparators()][];
         for (int i = 0; i < nClasses; i++) {
             for (int j = 0; j < _cmp.nComparators(); j++) {
-                _matchWeights[i][j] = new double[_cmp.nLevels(j)];
+                _mWeights[i][j] = new double[_cmp.nLevels(j)];
+                _logMWeights[i][j] = new double[_cmp.nLevels(j)];
             }
         }
 
         _classWeights = new double[nClasses];
 
         estimate(rng, counter);
+    }
+
+    public ConditionalIndependenceModel(Random rng, Counter counter, int nClasses) {
+        this(rng, counter, nClasses, 1);
     }
 
     public ConditionalIndependenceModel(Counter counter, int nClasses) {
@@ -62,7 +73,7 @@ public class ConditionalIndependenceModel {
 
         for (int i = 0; i < _nClasses; i++) {
             for (int j = 0; j < _cmp.nComparators(); j++) {
-                partitionOne(rng, _matchWeights[i][j]);
+                partitionOne(rng, _mWeights[i][j]);
             }
         }
     }
@@ -72,13 +83,14 @@ public class ConditionalIndependenceModel {
     }
 
     /**
-     * Return the matching weights for this model. The matching weights are stored
-     * in a three-dimensional array indexed by class, comparator, and level. For
-     * example, the probability that the kth comparator value is x, conditional on
-     * being in the jth class is <code>matchWeights()[j][k][x]</code>.
+     * Return the multinomial weights for this model. The multinomial weights
+     * are stored in a three-dimensional array indexed by class, comparator,
+     * and level. For example, the probability that the kth comparator value is
+     * x, conditional on being in the jth class is
+     * <code>multinomialWeights()[j][k][x]</code>.
      */
-    public double[][][] matchWeights() {
-        return _matchWeights;
+    public double[][][] multinomialWeights() {
+        return _mWeights;
     }
 
     /**
@@ -86,6 +98,21 @@ public class ConditionalIndependenceModel {
      */
     public double[] classWeights() {
         return _classWeights;
+    }
+
+    public double matchWeight(Record rec1, Record rec2) {
+        double weight = 0.0;
+        int[] pattern = _cmp.compare(rec1, rec2);
+
+        for (int j = 0; j < _nMatchClasses; j++)
+            for (int k = 0; k < _cmp.nComparators(); k++)
+                weight += _logMWeights[j][k][pattern[k]];
+
+        for (int j = _nMatchClasses; j < _nClasses; j++)
+            for (int k = 0; k < _cmp.nComparators(); k++)
+                weight -= _logMWeights[j][k][pattern[k]];
+
+        return weight;
     }
 
     /**
@@ -107,7 +134,7 @@ public class ConditionalIndependenceModel {
             for (int k = 0; k < _cmp.nComparators(); k++) {
                 builder.append(String.format("%-7d", k));
                 for (int x = 0; x < _cmp.nLevels(k); x++)
-                    builder.append(String.format("%6.4f ", _matchWeights[j][k][x]));
+                    builder.append(String.format("%6.4f ", _mWeights[j][k][x]));
 
                 builder.append("\n");
             }
@@ -151,6 +178,11 @@ public class ConditionalIndependenceModel {
 
             oldll = newll;
         }
+
+        for (int j = 0; j < _mWeights.length; j++)
+            for (int k = 0; k < _cmp.nComparators(); k++)
+                for (int x = 0; x < _cmp.nLevels(k); x++)
+                    _logMWeights[j][k][x] = Math.log(_mWeights[j][k][x]);
     }
 
     private double logLikelihood(int[] counts, int[][] patterns, double[][] expectedClass) 
@@ -166,7 +198,7 @@ public class ConditionalIndependenceModel {
                     continue;
 
                 for (int k = 0; k < patternLength; k++) {
-                    patll += Math.log(_matchWeights[j][k][patterns[i][k]]);
+                    patll += Math.log(_mWeights[j][k][patterns[i][k]]);
                 }
 
                 patll += Math.log(_classWeights[j]);
@@ -190,7 +222,7 @@ public class ConditionalIndependenceModel {
                 expectedClass[i][j] = _classWeights[j];
 
                 for (int k = 0; k < patternLength; k++) {
-                    expectedClass[i][j] *= _matchWeights[j][k][patterns[i][k]];
+                    expectedClass[i][j] *= _mWeights[j][k][patterns[i][k]];
                 }
 
                 patternTotal += expectedClass[i][j];
@@ -205,7 +237,7 @@ public class ConditionalIndependenceModel {
     {
         for (int i = 0; i < _nClasses; i++) {
             for (int j = 0; j < _cmp.nComparators(); j++)
-                Arrays.fill(_matchWeights[i][j], 0.0);
+                Arrays.fill(_mWeights[i][j], 0.0);
         }
 
         double[] classTotal = new double[_nClasses];
@@ -218,13 +250,13 @@ public class ConditionalIndependenceModel {
                 countTotal += d;
 
                 for (int k = 0; k < _cmp.nComparators(); k++) {
-                    _matchWeights[j][k][patterns[u][k]] += d;
+                    _mWeights[j][k][patterns[u][k]] += d;
                 }
             }
 
             for (int k = 0; k < _cmp.nComparators(); k++) {
-                for (int x = 0; x < _matchWeights[j][k].length; x++)
-                    _matchWeights[j][k][x] /= classTotal[j];
+                for (int x = 0; x < _mWeights[j][k].length; x++)
+                    _mWeights[j][k][x] /= classTotal[j];
             }
         }
 
@@ -232,8 +264,9 @@ public class ConditionalIndependenceModel {
             _classWeights[j] = classTotal[j] / countTotal;
     }
 
-    private final int _nClasses;
+    private final int _nClasses, _nMatchClasses;
     private final RecordComparator _cmp;
-    private final double[][][] _matchWeights;
+    private final double[][][] _mWeights;
+    private final double[][][] _logMWeights;
     private final double[] _classWeights;
 }
