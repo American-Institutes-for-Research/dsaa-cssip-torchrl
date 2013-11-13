@@ -1,5 +1,6 @@
 package gov.census.torch.model;
 
+import gov.census.torch.IModel;
 import gov.census.torch.Record;
 import gov.census.torch.counter.Counter;
 import gov.census.torch.RecordComparator;
@@ -7,21 +8,25 @@ import gov.census.torch.RecordComparator;
 import java.util.Arrays;
 import java.util.Random;
 
-public class ConditionalIndependenceModel {
+public class ConditionalIndependenceModel 
+    implements IModel
+{
 
     public final static double TOLERANCE = 0.0000001;
     public final static int MAX_ITER = 500;
 
-    public ConditionalIndependenceModel(Random rng, Counter counter, int nClasses, int nMatchClasses)
+    /**
+     * Construct a new ConditionalIndependenceModel by fitting unlabeled data.
+     * After construction, it's up to the user to declare which of the classes
+     * correspond to matches for the purpose of computing match weights.
+     */
+    public ConditionalIndependenceModel(Random rng, Counter counter, int nClasses)
     {
-        if (nClasses < 1)
-            throw new IllegalArgumentException("'nClasses' must be greater than 0");
-
-        if (nClasses <= nMatchClasses)
-            throw new IllegalArgumentException("must have at least one nonmatch class");
+        if (nClasses < 2)
+            throw new IllegalArgumentException("'nClasses' must be greater than 1");
 
         _nClasses = nClasses;
-        _nMatchClasses = nMatchClasses;
+        _matchClass = new boolean[nClasses];
         _cmp = counter.recordComparator();
 
         _mWeights = new double[nClasses][_cmp.nComparators()][];
@@ -38,10 +43,6 @@ public class ConditionalIndependenceModel {
         estimate(rng, counter);
     }
 
-    public ConditionalIndependenceModel(Random rng, Counter counter, int nClasses) {
-        this(rng, counter, nClasses, 1);
-    }
-
     public ConditionalIndependenceModel(Counter counter, int nClasses) {
         this(new Random(), counter, nClasses);
     }
@@ -49,7 +50,7 @@ public class ConditionalIndependenceModel {
     /**
      * Fill <code>ary</code> with a partition of 1.
      */
-    public void partitionOne(Random rng, double[] ary) {
+    public static void partitionOne(Random rng, double[] ary) {
         double[] u = new double[ary.length - 1];
         for (int i = 0; i < u.length; i++)
             u[i] = rng.nextDouble();
@@ -62,20 +63,6 @@ public class ConditionalIndependenceModel {
         }
 
         ary[ary.length - 1] = 1.0 - uLast;
-    }
-
-    /**
-     * Initialize the weight arrays. For now, this method creates random partitions
-     * of unity.
-     */
-    public void initWeights(Random rng) {
-        partitionOne(rng, _classWeights);
-
-        for (int i = 0; i < _nClasses; i++) {
-            for (int j = 0; j < _cmp.nComparators(); j++) {
-                partitionOne(rng, _mWeights[i][j]);
-            }
-        }
     }
 
     public int nClasses() {
@@ -100,17 +87,23 @@ public class ConditionalIndependenceModel {
         return _classWeights;
     }
 
+    public void setMatchClass(int j, boolean isMatchClass) {
+        _matchClass[j] = isMatchClass;
+    }
+
     public double matchWeight(Record rec1, Record rec2) {
         double weight = 0.0;
         int[] pattern = _cmp.compare(rec1, rec2);
 
-        for (int j = 0; j < _nMatchClasses; j++)
-            for (int k = 0; k < _cmp.nComparators(); k++)
-                weight += _logMWeights[j][k][pattern[k]];
-
-        for (int j = _nMatchClasses; j < _nClasses; j++)
-            for (int k = 0; k < _cmp.nComparators(); k++)
-                weight -= _logMWeights[j][k][pattern[k]];
+        for (int j = 0; j < _nClasses; j++) {
+                if (_matchClass[j]) {
+                    for (int k = 0; k < _cmp.nComparators(); k++)
+                        weight += _logMWeights[j][k][pattern[k]];
+                } else {
+                    for (int k = 0; k < _cmp.nComparators(); k++)
+                        weight -= _logMWeights[j][k][pattern[k]];
+                }
+        }
 
         return weight;
     }
@@ -141,6 +134,20 @@ public class ConditionalIndependenceModel {
         }
 
         return builder.toString();
+    }
+
+    /**
+     * Initialize the weight arrays. For now, this method creates random partitions
+     * of unity.
+     */
+    private void initWeights(Random rng) {
+        partitionOne(rng, _classWeights);
+
+        for (int i = 0; i < _nClasses; i++) {
+            for (int j = 0; j < _cmp.nComparators(); j++) {
+                partitionOne(rng, _mWeights[i][j]);
+            }
+        }
     }
 
     private void estimate(Random rng, Counter counter) {
@@ -264,7 +271,8 @@ public class ConditionalIndependenceModel {
             _classWeights[j] = classTotal[j] / countTotal;
     }
 
-    private final int _nClasses, _nMatchClasses;
+    private final int _nClasses;
+    private final boolean[] _matchClass;
     private final RecordComparator _cmp;
     private final double[][][] _mWeights;
     private final double[][][] _logMWeights;
