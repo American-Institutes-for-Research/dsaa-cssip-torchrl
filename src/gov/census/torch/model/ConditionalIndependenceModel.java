@@ -88,6 +88,35 @@ public class ConditionalIndependenceModel {
         return _classWeights;
     }
 
+    /**
+     * Return a String representation of this model.
+     *
+     * TODO: Eventually this should print the field names next to the match
+     * weights. This means I need to rewrite RecordComparator to keep track
+     * of field names (or rework FileSchema stuff?).
+     */
+    public String toString() {
+        int precision = 4;
+        StringBuilder builder = new StringBuilder();
+
+        for (int j = 0; j < _nClasses; j++) {
+            builder.append(String.format("Class %2d (%6.4f):%n", j, _classWeights[j]));
+            builder.append(String.format("%-7s%s%n", "Field", "Weights"));
+
+            for (int k = 0; k < _cmp.nComparators(); k++) {
+                builder.append(String.format("%-7d", k));
+                for (int x = 0; x < _cmp.nLevels(k); x++)
+                    builder.append(String.format("%6.4f ", _matchWeights[j][k][x]));
+
+                builder.append("\n");
+            }
+
+            builder.append("\n");
+        }
+
+        return builder.toString();
+    }
+
     private void estimate(Random rng, Counter counter) {
 
         int[] counts = counter.nonzeroCounts();

@@ -21,9 +21,14 @@ public class Counter {
         _nonzeroPatternIndex = new int[_countMap.size()];
         int insertIndex = 0;
 
+        int maxCount = 0;
         for (Integer ix: _countMap.keySet()) {
             _nonzeroPatternIndex[insertIndex] = ix;
-            _nonzeroCounts[insertIndex] = _countMap.get(ix);
+            int thisCount = _countMap.get(ix);
+            _nonzeroCounts[insertIndex] = thisCount;
+
+            if (thisCount > maxCount)
+                maxCount = thisCount;
 
             int[] pattern = cmp.patternFor(ix);
             for (int k = 0; k < pattern.length; k++)
@@ -31,6 +36,8 @@ public class Counter {
 
             insertIndex++;
         }
+
+        _maxCount = maxCount;
     }
 
     public RecordComparator recordComparator() {
@@ -43,6 +50,28 @@ public class Counter {
 
     public int[][] nonzeroPatterns() {
         return _nonzeroPatterns;
+    }
+
+    public String toString() {
+        int countWidth = 4;
+        int n = _maxCount;
+        while (n > 0) {
+            countWidth++;
+            n /= 10;
+        }
+
+        int patternWidth = 3 * _cmp.nComparators() + 4;
+
+        StringBuilder builder = new StringBuilder();
+        String fmtTitle = "%-" + patternWidth + "s%" + countWidth + "s%n";
+        String fmt = "%-" + patternWidth + "s%" + countWidth + "d%n";
+
+        builder.append(String.format(fmtTitle, "pattern", "count"));
+
+        for (int i = 0; i < _nonzeroPatterns.length; i++)
+            builder.append(String.format(fmt, Arrays.toString(_nonzeroPatterns[i]), _nonzeroCounts[i]));
+
+        return builder.toString();
     }
 
     protected static TreeMap<Integer, Integer> 
@@ -95,4 +124,6 @@ public class Counter {
     private final int[] _nonzeroCounts;
     private final int[][] _nonzeroPatterns;
     private final int[] _nonzeroPatternIndex;
+
+    private final int _maxCount;
 }
