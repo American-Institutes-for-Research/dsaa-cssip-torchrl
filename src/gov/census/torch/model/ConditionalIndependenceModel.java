@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class ConditionalIndependenceModel {
 
-    public final static double EPSILON = 0.000001;
+    public final static double TOLERANCE = 0.0000001;
     public final static int MAX_ITER = 500;
 
     public ConditionalIndependenceModel(RecordComparator cmp, int nClasses)
@@ -82,6 +82,9 @@ public class ConditionalIndependenceModel {
             double patll = 0.0;
 
             for (int j = 0; j < _nClasses; j++) {
+                if (expectedClass[i][j] == 0)
+                    continue;
+
                 for (int k = 0; k < patternLength; k++) {
                     patll += Math.log(_matchWeights[j][k][nonzeroPatterns[i][k]]);
                 }
@@ -148,7 +151,7 @@ public class ConditionalIndependenceModel {
                                   nonzeroPatterns, 
                                   counts, 
                                   expectedClass);
-            delta = Math.abs(newll - oldll);
+            delta = newll - oldll;
 
             if (iter % 10 == 0) {
                 System.out.println("iteration: " + iter + 
@@ -156,7 +159,8 @@ public class ConditionalIndependenceModel {
                                    ", delta: " + delta);
             }
 
-            if (delta < EPSILON) {
+            // TODO: should the first test be necessary?
+            if (delta >= 0 && delta < TOLERANCE) {
                 System.out.println("iteration: " + iter + 
                                    ", likelihood: " + newll + 
                                    ", delta: " + delta);
