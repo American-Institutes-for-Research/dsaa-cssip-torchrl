@@ -64,39 +64,21 @@ public class ConditionalIndependenceModel {
         return _nClasses;
     }
 
+    /**
+     * Return the matching weights for this model. The matching weights are stored
+     * in a three-dimensional array indexed by class, comparator, and level. For
+     * example, the probability that the kth comparator value is x, conditional on
+     * being in the jth class is <code>matchWeights()[j][k][x]</code>.
+     */
     public double[][][] matchWeights() {
         return _matchWeights;
     }
 
+    /**
+     * Return the marginal probability of each class.
+     */
     public double[] classWeights() {
         return _classWeights;
-    }
-
-    public double logLikelihood(int[] nonzeroPatternIndex, int[][] nonzeroPatterns,
-                                int[] counts, double[][] expectedClass) 
-    {
-        double ll = 0.0;
-        int patternLength = cmp.nComparators();
-
-        for (int i = 0; i < nonzeroPatternIndex.length; i++) {
-            double patll = 0.0;
-
-            for (int j = 0; j < _nClasses; j++) {
-                if (expectedClass[i][j] == 0)
-                    continue;
-
-                for (int k = 0; k < patternLength; k++) {
-                    patll += Math.log(_matchWeights[j][k][nonzeroPatterns[i][k]]);
-                }
-
-                patll += Math.log(_classWeights[j]);
-                patll *= expectedClass[i][j];
-            }
-
-            ll += patll * counts[nonzeroPatternIndex[i]];
-        }
-
-        return ll;
     }
 
     public void estimate(int[] counts) {
@@ -169,6 +151,33 @@ public class ConditionalIndependenceModel {
 
             oldll = newll;
         }
+    }
+
+    private double logLikelihood(int[] nonzeroPatternIndex, int[][] nonzeroPatterns,
+                                 int[] counts, double[][] expectedClass) 
+    {
+        double ll = 0.0;
+        int patternLength = cmp.nComparators();
+
+        for (int i = 0; i < nonzeroPatternIndex.length; i++) {
+            double patll = 0.0;
+
+            for (int j = 0; j < _nClasses; j++) {
+                if (expectedClass[i][j] == 0)
+                    continue;
+
+                for (int k = 0; k < patternLength; k++) {
+                    patll += Math.log(_matchWeights[j][k][nonzeroPatterns[i][k]]);
+                }
+
+                patll += Math.log(_classWeights[j]);
+                patll *= expectedClass[i][j];
+            }
+
+            ll += patll * counts[nonzeroPatternIndex[i]];
+        }
+
+        return ll;
     }
 
     private void estep(int[] nonzeroPatternIndex, int[][] nonzeroPatterns, 
