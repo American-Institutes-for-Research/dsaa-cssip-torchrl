@@ -98,6 +98,7 @@ public class ConditionalIndependenceModel {
     public String toString() {
         int precision = 4;
         StringBuilder builder = new StringBuilder();
+        builder.append(String.format("Model: conditional independence with %d classes%n", _nClasses));
 
         for (int j = 0; j < _nClasses; j++) {
             builder.append(String.format("Class %2d (%6.4f):%n", j, _classWeights[j]));
@@ -110,8 +111,6 @@ public class ConditionalIndependenceModel {
 
                 builder.append("\n");
             }
-
-            builder.append("\n");
         }
 
         return builder.toString();
@@ -131,6 +130,8 @@ public class ConditionalIndependenceModel {
         double oldll = logLikelihood(counts, patterns, expectedClass);
         double newll, delta;
 
+        System.out.format("%10s%16s%16s%n", "iteration", "likelihood", "delta");
+
         for (int iter = 1; iter <= MAX_ITER; iter++) {
             estep(patterns, expectedClass);
             mstep(counts, patterns, expectedClass);
@@ -139,16 +140,12 @@ public class ConditionalIndependenceModel {
             delta = newll - oldll;
 
             if (iter % 10 == 0) {
-                System.out.println("iteration: " + iter + 
-                                   ", likelihood: " + newll + 
-                                   ", delta: " + delta);
+                System.out.format("%10d%16.7f%16.7f%n", iter, newll, delta);
             }
 
             // TODO: should the first test be necessary?
             if (delta >= 0 && delta < TOLERANCE) {
-                System.out.println("iteration: " + iter + 
-                                   ", likelihood: " + newll + 
-                                   ", delta: " + delta);
+                System.out.format("%10d%16.7f%16.7f%n", iter, newll, delta);
                 break;
             }
 
