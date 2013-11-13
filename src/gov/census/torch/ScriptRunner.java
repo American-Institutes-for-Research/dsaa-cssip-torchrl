@@ -28,8 +28,14 @@ public class ScriptRunner {
             engine.eval(reader);
             engine.eval(new FileReader(args[0]));
         }
-        catch(IOException|ScriptException e) {
-            e.printStackTrace();
+        catch(IOException ioe) {
+            System.err.println("There was a problem reading the script file:");
+            System.err.println(ioe);
+            System.exit(1);
+        } catch(ScriptException se) {
+            System.err.println("There was a problem executing the script:");
+            System.err.println(se);
+            se.printStackTrace();
             System.exit(1);
         }
     }

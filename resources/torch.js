@@ -1,6 +1,7 @@
 importPackage(Packages.gov.census.torch);
 importPackage(Packages.gov.census.torch.comparators);
 importPackage(Packages.gov.census.torch.counter);
+importPackage(Packages.gov.census.torch.model);
 importPackage(Packages.gov.census.torch.io);
 
 EXACT = StandardComparators.EXACT;

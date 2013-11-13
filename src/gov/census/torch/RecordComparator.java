@@ -9,9 +9,6 @@ import java.util.Arrays;
  */
 public class RecordComparator {
 
-    public final static int BLANK = -1;
-    public final static int DISAGREE = 0;
-
     public static class Builder {
 
         public Builder(IFileSchema schema1, IFileSchema schema2, 
@@ -92,7 +89,7 @@ public class RecordComparator {
             nPatterns *= nLevels;
 
             if (i > 0)
-                this.steps[i] = this.steps[i - 1] * this.comparators[i - 1].nLevels();
+                this.steps[i] = this.steps[i - 1] * this.levels[i - 1];
         }
 
         this._nPatterns = nPatterns;
@@ -113,11 +110,7 @@ public class RecordComparator {
 
             // short circuit evaluation if either of the fields is blank
             if (isBlank(field1) || isBlank(field2)) {
-                if (this._handleBlanks)
-                    pattern[i] = BLANK;
-                else
-                    pattern[i] = DISAGREE;
-
+                pattern[i] = 0;
                 continue;
             }
 
@@ -125,17 +118,18 @@ public class RecordComparator {
 
             // short circuit evaluation if exact match
             if (field1.stringValue().equals(field2.stringValue())) {
-                pattern[i] = cmp.nLevels() - 1;
+                pattern[i] = cmp.nLevels() - 1 + levelOffset;
                 continue;
             }
 
             // if you've made it this far and you're using ExactComparator, then you disagree
             if (cmp.getClass() == ExactComparator.class) {
-                pattern[i] = DISAGREE;
+                pattern[i] = levelOffset;
                 continue;
             }
 
-            pattern[i] = comparators[i].compare(rec1.field(index1), rec2.field(index2));
+            pattern[i] = 
+                comparators[i].compare(rec1.field(index1), rec2.field(index2)) + levelOffset;
         }
 
         return pattern;
@@ -159,6 +153,10 @@ public class RecordComparator {
         return _nPatterns;
     }
 
+    public int nLevels(int i) {
+        return levels[i];
+    }
+
     public int[] patternFor(int index) {
         if (index < 0 || index >= _nPatterns)
             throw new ArrayIndexOutOfBoundsException();
@@ -167,7 +165,7 @@ public class RecordComparator {
 
         for (int i = 0; i < _nComparators; i++) {
             int j = _nComparators - 1 - i;
-            pattern[j] = index / steps[j] - levelOffset;
+            pattern[j] = index / steps[j];
             index %= steps[j];
         }
 
@@ -178,7 +176,7 @@ public class RecordComparator {
         int index = 0;
 
         for (int i = 0; i < _nComparators; i++)
-            index += (pattern[i] + levelOffset) * steps[i];
+            index += pattern[i] * steps[i];
 
         return index;
     }

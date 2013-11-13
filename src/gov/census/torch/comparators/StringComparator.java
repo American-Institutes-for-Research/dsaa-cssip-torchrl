@@ -235,7 +235,7 @@ public class StringComparator implements IFieldComparator {
 
     @Override
     public int nLevels() {
-        return this.levels.length;
+        return this.levels.length + 1;
     }
 
     private final double[] levels;
