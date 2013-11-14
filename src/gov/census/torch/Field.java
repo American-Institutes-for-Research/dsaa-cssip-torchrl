@@ -38,7 +38,17 @@ public class Field {
         return dval;
     }
 
-    private String val;
+    @Override
+    public String toString() {
+        return val;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof Field && val.equals(obj.toString()));
+    }
+
+    private final String val;
     private double dval;
     private int ival;
 }

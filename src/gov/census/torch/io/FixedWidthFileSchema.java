@@ -10,6 +10,8 @@ import java.util.HashMap;
  * A class describing a fixed-width file. In all addFoo methods, it is assumed that the
  * user is entering <code>start</code> and <code>off</code> using 1 for the first
  * column in the file.
+ *
+ * TODO: start from column 0, why mess around?
  */
 public class FixedWidthFileSchema 
     implements gov.census.torch.IFileSchema

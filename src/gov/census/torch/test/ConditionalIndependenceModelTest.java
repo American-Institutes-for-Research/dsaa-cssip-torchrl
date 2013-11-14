@@ -43,14 +43,14 @@ public class ConditionalIndependenceModelTest {
             .comparator("first", StandardComparators.STRING)
             .build();
 
-        model = new ConditionalIndependenceModel(cmp, 3);
+        // model = new ConditionalIndependenceModel(cmp, 3);
     }
 
     @Test
     public void testPartitionOne() {
         Random rng = new Random();
         double[] ary = new double[10];
-        model.partitionOne(rng, ary);
+        ConditionalIndependenceModel.partitionOne(rng, ary);
 
         double total = 0.0;
         for (int i = 0; i < ary.length; i++) {
@@ -60,29 +60,5 @@ public class ConditionalIndependenceModelTest {
         }
 
         assertThat(total, is(1.0));
-    }
-
-    @Test
-    public void testInitWeights() {
-        Random rng = new Random();
-        int nNonzeroPatterns = 10;
-        model.initWeights(rng);
-        
-        double[] classWeights = model.classWeights();
-        double classTotalWeight = 0.0;
-        for (int i = 0; i < model.nClasses(); i++)
-            classTotalWeight += classWeights[i];
-        assertThat(classTotalWeight, is(1.0));
-
-        double[][][] matchWeights = model.matchWeights();
-        for (int i = 0; i < model.nClasses(); i++) {
-            for (int j = 0; j < matchWeights[0].length; j++) {
-                double matchWeightsTotal = 0.0;
-                for (int k = 0; k < matchWeights[i][j].length; k++)
-                        matchWeightsTotal += matchWeights[i][j][k];
-
-                assertThat(matchWeightsTotal, is(1.0));
-            }
-        }
     }
 }
