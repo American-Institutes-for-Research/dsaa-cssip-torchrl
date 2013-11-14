@@ -11,7 +11,7 @@ public class RecordComparator {
 
     public static class Builder {
 
-        public Builder(IFileSchema schema1, IFileSchema schema2, 
+        public Builder(RecordSchema schema1, RecordSchema schema2, 
                        boolean handleBlanks) 
         {
             insertIndex = 0;
@@ -23,8 +23,18 @@ public class RecordComparator {
             this.schema2 = schema2;
         }
 
-        public Builder(IFileSchema schema1, IFileSchema schema2) {
+        public Builder(RecordSchema schema1, RecordSchema schema2) {
             this(schema1, schema2, true);
+        }
+
+        public Builder(IRecordLoader load1, IRecordLoader load2,
+                       boolean handleBlanks) 
+        {
+            this(load1.schema(), load2.schema(), handleBlanks);
+        }
+
+        public Builder(IRecordLoader load1, IRecordLoader load2) {
+            this(load1.schema(), load2.schema());
         }
 
         public Builder comparator(int field1, int field2, IFieldComparator cmp) {
@@ -44,8 +54,8 @@ public class RecordComparator {
         }
 
         public Builder comparator(String name, IFieldComparator cmp) {
-            return this.comparator(schema1.getFieldIndex(name),
-                                   schema2.getFieldIndex(name), cmp);
+            return this.comparator(schema1.fieldIndex(name),
+                                   schema2.fieldIndex(name), cmp);
         }
 
         public RecordComparator build() {
@@ -61,8 +71,7 @@ public class RecordComparator {
         private IFieldComparator[] comparators;
         private boolean handleBlanks;
         
-        private IFileSchema schema1;
-        private IFileSchema schema2;
+        private final RecordSchema schema1, schema2;
     }
 
     private RecordComparator(int nComparators,

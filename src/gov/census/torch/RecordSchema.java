@@ -18,6 +18,7 @@ public class RecordSchema {
         _columns = columns;
         _blockingFields = blockingFields;
         _idFields = idFields;
+        _hasId = (idFields.length > 0);
 
         _columnIndex = new HashMap<>();
         int i = 0;
@@ -75,6 +76,11 @@ public class RecordSchema {
         return _columnIndex.get(name);
     }
 
+    public boolean hasId() {
+        return _hasId;
+    }
+
     private final HashMap<String, Integer> _columnIndex, _fieldIndex;
     private final String[] _columns, _fields, _blockingFields, _idFields;
+    private final boolean _hasId;
 }

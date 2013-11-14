@@ -14,34 +14,30 @@ function isDefined(x) {
 }
 
 Script = {
-    newFileSchema: function(obj) {
+    newFixedWidthFileSchema: function(obj) {
         var b = new FixedWidthFileSchema.Builder();
 
-        var fields = obj['fields'];
-        if (!isDefined(fields)) {
-            throw "file_schema must include 'fields'";
+        var columns = obj['columns'];
+        if (!isDefined(columns)) {
+            throw "file schema must include 'columns'";
         }
 
-        for (var i = 0; i < fields.length; i++) {
-            var f = fields[i];
-            b.field(f[0], f[1], f[2]);
+        for (var i = 0; i < columns.length; i++) {
+            var f = columns[i];
+            b.column(f[0], f[1], f[2]);
         }
 
         var blockingFields = obj['blockingFields'];
         if (isDefined(blockingFields)) {
             for (var i = 0; i < blockingFields.length; i++) {
-                var f = blockingFields[i];
-                var k = (typeof f[0] == 'string') ? 1 : 0;
-                b.blockingField(f[0 + k], f[1 + k]);
+                b.blockingField(blockingFields[i]);
             }
         }
 
         var idFields = obj['idFields'];
         if (isDefined(idFields)) {
             for (var i = 0; i < idFields.length; i++) {
-                var f = idFields[i];
-                var k = (typeof f[0] == 'string') ? 1 : 0;
-                b.idField(f[0 + k], f[1 + k]);
+                b.idField(idFields[i]);
             }
         }
 

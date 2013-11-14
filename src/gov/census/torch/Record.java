@@ -62,6 +62,18 @@ public class Record {
         return true;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append("Key: " + _blockingKey + ", ");
+
+        if (_schema.hasId())
+            b.append("ID: " + _id + ", ");
+
+        b.append("Fields: " + Arrays.toString(_fields));
+        return b.toString();
+    }
+
     private final RecordSchema _schema;
     private final String _blockingKey;
     private final String _id;
