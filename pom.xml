@@ -38,6 +38,7 @@
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
                 </configuration>
             </plugin>
 
@@ -52,6 +53,32 @@
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>com.googlecode.jcsv:jcsv</artifact>
+                                    <includes>
+                                        <include>com/googlecode/jcsv/*</include>
+                                        <include>com/googlecode/jcsv/reader/**</include>
+                                        <include>com/googlecode/jcsv/util/**</include>
+                                    </includes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
       </plugins>
   </build>

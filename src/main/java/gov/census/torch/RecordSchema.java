@@ -10,8 +10,8 @@ import java.util.HashMap;
  * imported into the program (from a file, database, etc) and I use field to
  * refer to a field that can be used in a record comparison.
  */
-public class RecordSchema {
-
+public class RecordSchema implements IRecordSchema
+{
     public RecordSchema(String[] columns, String[] blockingFields,
                         String[] idFields) 
     {
@@ -62,6 +62,7 @@ public class RecordSchema {
         return new Record(this, blockingKey.toString(), id.toString(), fields);
     }
 
+    @Override
     public int fieldIndex(String name) {
         if (!_fieldIndex.containsKey(name))
             throw new IllegalArgumentException("No such field: " + name);
@@ -69,6 +70,7 @@ public class RecordSchema {
         return _fieldIndex.get(name);
     }
 
+    @Override
     public int columnIndex(String name) {
         if (!_columnIndex.containsKey(name))
             throw new IllegalArgumentException("No such column: " + name);

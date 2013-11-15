@@ -11,30 +11,20 @@ public class RecordComparator {
 
     public static class Builder {
 
-        public Builder(RecordSchema schema1, RecordSchema schema2, 
-                       boolean handleBlanks) 
+        public Builder(IRecordSchema schema1, IRecordSchema schema2) 
         {
+            this.schema1 = schema1;
+            this.schema2 = schema2;
+            this.handleBlanks = true;
+
             insertIndex = 0;
             fieldIndex1 = new int[INITIAL_CAPACITY];
             fieldIndex2 = new int[INITIAL_CAPACITY];
             comparators = new IFieldComparator[INITIAL_CAPACITY];
-            this.handleBlanks = handleBlanks;
-            this.schema1 = schema1;
-            this.schema2 = schema2;
         }
 
-        public Builder(RecordSchema schema1, RecordSchema schema2) {
-            this(schema1, schema2, true);
-        }
-
-        public Builder(IRecordLoader load1, IRecordLoader load2,
-                       boolean handleBlanks) 
-        {
-            this(load1.schema(), load2.schema(), handleBlanks);
-        }
-
-        public Builder(IRecordLoader load1, IRecordLoader load2) {
-            this(load1.schema(), load2.schema());
+        public Builder(IRecordSchema schema) {
+            this(schema, schema);
         }
 
         public Builder compare(int field1, int field2, IFieldComparator cmp) {
@@ -58,6 +48,11 @@ public class RecordComparator {
                                 schema2.fieldIndex(name), cmp);
         }
 
+        public Builder handleBlanks(boolean b) {
+            handleBlanks = b;
+            return this;
+        }
+
         public RecordComparator build() {
             return new RecordComparator(insertIndex, fieldIndex1, fieldIndex2,
                                         comparators, handleBlanks);
@@ -71,7 +66,7 @@ public class RecordComparator {
         private IFieldComparator[] comparators;
         private boolean handleBlanks;
         
-        private final RecordSchema schema1, schema2;
+        private final IRecordSchema schema1, schema2;
     }
 
     private RecordComparator(int nComparators,

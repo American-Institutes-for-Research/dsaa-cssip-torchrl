@@ -112,6 +112,16 @@ public class FixedWidthFileSchema implements IRecordLoader
         return _schema;
     }
 
+    @Override
+    public int fieldIndex(String name) {
+        return _schema.fieldIndex(name);
+    }
+
+    @Override
+    public int columnIndex(String name) {
+        return _schema.columnIndex(name);
+    }
+
     private FixedWidthFileSchema(RecordSchema schema, int[] columnStart, int[] columnOff) {
         _schema = schema;
         _columnStart = columnStart;

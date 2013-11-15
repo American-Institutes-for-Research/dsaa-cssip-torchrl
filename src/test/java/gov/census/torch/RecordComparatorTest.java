@@ -34,10 +34,11 @@ public class RecordComparatorTest {
             .build();
 
         cmp =
-            new RecordComparator.Builder(schema1, schema2, false)
+            new RecordComparator.Builder(schema1, schema2)
             .compare("last", StandardComparators.STRING)
             .compare("age", StandardComparators.YEAR)
             .compare("first", StandardComparators.STRING)
+            .handleBlanks(false)
             .build();
 
         cmpBlanks = 
@@ -45,6 +46,7 @@ public class RecordComparatorTest {
             .compare("last", StandardComparators.STRING)
             .compare("age", StandardComparators.YEAR)
             .compare("first", StandardComparators.STRING)
+            .handleBlanks(true)
             .build();
     }
 

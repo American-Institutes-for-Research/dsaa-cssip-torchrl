@@ -10,12 +10,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.googlecode.jcsv.CSVStrategy;
+import com.googlecode.jcsv.reader.CSVEntryParser;
 import com.googlecode.jcsv.reader.CSVReader;
 import com.googlecode.jcsv.reader.internal.CSVReaderBuilder;
 
 public class DelimitedFileSchema 
-    implements gov.census.torch.IRecordLoader,
-               com.googlecode.jcsv.reader.CSVEntryParser<Record>
+    implements gov.census.torch.IRecordLoader, CSVEntryParser<Record>
 {
     /**
      * Construct a new DelimitedFileSchema instance. Columns names must be
@@ -30,6 +30,9 @@ public class DelimitedFileSchema
         public Builder() {
             _delimiter = ',';
             _header = false;
+            _columns = new LinkedList<>(); 
+            _blockingFields = new LinkedList<>(); 
+            _idFields = new LinkedList<>();
         }
 
         public Builder delimiter(char d) {
@@ -109,7 +112,7 @@ public class DelimitedFileSchema
         }
 
         CSVReader<Record> csv =
-            new CSVReaderBuilder(rdr)
+            new CSVReaderBuilder<Record>(rdr)
             .strategy(_strategy)
             .entryParser(this)
             .build();
@@ -135,6 +138,16 @@ public class DelimitedFileSchema
     @Override
     public Record parseEntry(String... columns) {
         return _schema.newRecord(columns);
+    }
+
+    @Override
+    public int fieldIndex(String name) {
+        return _schema.fieldIndex(name);
+    }
+
+    @Override
+    public int columnIndex(String name) {
+        return _schema.columnIndex(name);
     }
 
     private DelimitedFileSchema(RecordSchema schema, CSVStrategy strategy) {
