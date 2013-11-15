@@ -51,8 +51,22 @@ public class FixedWidthFileSchema implements IRecordLoader
             return this;
         }
 
+        public Builder blockingFields(String... names) {
+            for (String name: names)
+                _blockingFields.add(name);
+
+            return this;
+        }
+
         public Builder idField(String name) {
             _idFields.add(name);
+            return this;
+        }
+
+        public Builder idFields(String... names) {
+            for (String name: names)
+                _idFields.add(name);
+
             return this;
         }
 

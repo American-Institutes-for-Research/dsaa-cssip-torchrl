@@ -37,7 +37,7 @@ public class RecordComparator {
             this(load1.schema(), load2.schema());
         }
 
-        public Builder comparator(int field1, int field2, IFieldComparator cmp) {
+        public Builder compare(int field1, int field2, IFieldComparator cmp) {
             if (insertIndex == fieldIndex1.length) {
                 int newLength = 2*fieldIndex1.length;
                 fieldIndex1 = Arrays.copyOf(fieldIndex1, newLength);
@@ -53,9 +53,9 @@ public class RecordComparator {
             return this;
         }
 
-        public Builder comparator(String name, IFieldComparator cmp) {
-            return this.comparator(schema1.fieldIndex(name),
-                                   schema2.fieldIndex(name), cmp);
+        public Builder compare(String name, IFieldComparator cmp) {
+            return this.compare(schema1.fieldIndex(name),
+                                schema2.fieldIndex(name), cmp);
         }
 
         public RecordComparator build() {

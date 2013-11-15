@@ -49,7 +49,7 @@ Script = {
 
         for (var i = 0; i < ary.length; i++) {
             c = ary[i];
-            b.comparator(c[0], c[1]);
+            b.compare(c[0], c[1]);
         }
 
         return b.build();

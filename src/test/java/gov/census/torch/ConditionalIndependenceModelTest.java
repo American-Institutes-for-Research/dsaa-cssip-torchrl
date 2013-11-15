@@ -39,9 +39,9 @@ public class ConditionalIndependenceModelTest {
 
         cmp =
             new RecordComparator.Builder(schema1, schema2, false)
-            .comparator("last", StandardComparators.STRING)
-            .comparator("age", StandardComparators.YEAR)
-            .comparator("first", StandardComparators.STRING)
+            .compare("last", StandardComparators.STRING)
+            .compare("age", StandardComparators.YEAR)
+            .compare("first", StandardComparators.STRING)
             .build();
 
         // model = new ConditionalIndependenceModel(cmp, 3);
