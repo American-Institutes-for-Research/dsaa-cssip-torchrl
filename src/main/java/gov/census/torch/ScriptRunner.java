@@ -15,17 +15,26 @@ public class ScriptRunner {
             System.exit(1);
         }
 
+        java.net.URL tv4 =
+            ScriptRunner.class.getClassLoader()
+            .getResource("gov/census/torch/script/tv4.js");
+
         java.net.URL baseScript =
             ScriptRunner.class.getClassLoader()
-            .getResource("gov/census/torch/torch.js");
+            .getResource("gov/census/torch/script/torch.js");
 
         ScriptEngineManager manager = new ScriptEngineManager();
         ScriptEngine engine = manager.getEngineByName("rhino");
 
         try {
             InputStreamReader reader = 
+                new InputStreamReader(tv4.openStream());
+            engine.eval(reader);
+
+            reader = 
                 new InputStreamReader(baseScript.openStream());
             engine.eval(reader);
+
             engine.eval(new FileReader(args[0]));
         }
         catch(IOException ioe) {
@@ -35,7 +44,6 @@ public class ScriptRunner {
         } catch(ScriptException se) {
             System.err.println("There was a problem executing the script:");
             System.err.println(se);
-            se.printStackTrace();
             System.exit(1);
         }
     }
