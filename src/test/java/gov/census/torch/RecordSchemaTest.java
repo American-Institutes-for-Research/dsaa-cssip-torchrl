@@ -1,8 +1,4 @@
-package gov.census.torch.test;
-
-import gov.census.torch.Field;
-import gov.census.torch.Record;
-import gov.census.torch.RecordSchema;
+package gov.census.torch;
 
 import org.junit.*;
 import static org.junit.Assert.assertThat;

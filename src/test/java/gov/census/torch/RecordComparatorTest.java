@@ -1,6 +1,5 @@
-package gov.census.torch.test;
+package gov.census.torch;
 
-import gov.census.torch.RecordComparator;
 import gov.census.torch.comparators.StandardComparators;
 import gov.census.torch.io.FixedWidthFileSchema;
 
@@ -18,18 +17,20 @@ public class RecordComparatorTest {
     public void setUp() {
         schema1 = 
             new FixedWidthFileSchema.Builder()
-            .blockingField(1, 5)
-            .field("first", 5, 15)
-            .field("last", 15, 25)
-            .field("age", 25, 25)
+            .column("zip", 1, 5)
+            .column("first", 5, 15)
+            .column("last", 15, 25)
+            .column("age", 25, 25)
+            .blockingField("zip")
             .build();
 
         schema2 = 
             new FixedWidthFileSchema.Builder()
-            .blockingField(1, 5)
-            .field("first", 5, 15)
-            .field("last", 15, 25)
-            .field("age", 25, 25)
+            .column("zip", 1, 5)
+            .column("first", 5, 15)
+            .column("last", 15, 25)
+            .column("age", 25, 25)
+            .blockingField("zip")
             .build();
 
         cmp =
