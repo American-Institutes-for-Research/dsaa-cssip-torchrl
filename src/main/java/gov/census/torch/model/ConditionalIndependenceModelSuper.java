@@ -51,21 +51,21 @@ public class ConditionalIndependenceModelSuper
         return _mWeights;
     }
 
-    public double matchWeight(Record rec1, Record rec2) {
-        double weight = 0.0;
+    public double matchScore(Record rec1, Record rec2) {
+        double score = 0.0;
         int[] pattern = _cmp.compare(rec1, rec2);
 
         for (int j = 0; j < _nMatchClasses; j++) {
             for (int k = 0; k < _cmp.nComparators(); k++)
-                weight += _logMWeights[j][k][pattern[k]];
+                score += _logMWeights[j][k][pattern[k]];
         }
 
         for (int j = _nMatchClasses; j < _nClasses; j++) {
             for (int k = 0; k < _cmp.nComparators(); k++)
-                weight -= _logMWeights[j][k][pattern[k]];
+                score -= _logMWeights[j][k][pattern[k]];
         }
 
-        return weight;
+        return score;
     }
 
     public String toString() {

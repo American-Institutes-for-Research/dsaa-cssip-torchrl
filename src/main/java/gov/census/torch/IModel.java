@@ -1,5 +1,5 @@
 package gov.census.torch;
 
 public interface IModel {
-    public double matchWeight(Record rec1, Record rec2);
+    public double matchScore(Record rec1, Record rec2);
 }
