@@ -13,7 +13,7 @@ public class ConditionalIndependenceModel
 {
 
     public final static double TOLERANCE = 0.0000001;
-    public final static int MAX_ITER = 500;
+    public final static int MAX_ITER = 50000;
 
     /**
      * Construct a new ConditionalIndependenceModel by fitting unlabeled data.
@@ -173,7 +173,10 @@ public class ConditionalIndependenceModel
             newll = logLikelihood(counts, patterns, expectedClass);
             delta = newll - oldll;
 
-            if (iter % 10 == 0) {
+            if (iter < 101 && iter % 10 == 0 ||
+                iter < 1001 && iter % 100 == 0 ||
+                iter % 1000 == 0) 
+            {
                 System.out.format("%10d%16.7f%16.7f%n", iter, newll, delta);
             }
 

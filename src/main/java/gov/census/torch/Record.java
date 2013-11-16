@@ -1,11 +1,31 @@
 package gov.census.torch;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A Record consists of several Fields, a blocking key, and, optionally, an id.
  */
 public class Record {
+
+    public static HashMap<String, List<Record>> block(List<Record> list) {
+        HashMap<String, List<Record>> blocks = new HashMap<>();
+        for (Record rec: list) {
+            String key = rec.blockingKey();
+
+            if (blocks.containsKey(key)) {
+                blocks.get(key).add(rec);
+            } else {
+                LinkedList<Record> ll = new LinkedList<>();
+                ll.add(rec);
+                blocks.put(key, ll);
+            }
+        }
+
+        return blocks;
+    }
 
     public Field field(int i) {
         return _fields[i];

@@ -5,12 +5,12 @@ import gov.census.torch.RecordComparator;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.TreeMap;
 
 public class Counter {
 
-    public Counter(RecordComparator cmp, Iterable<Record> list1, Iterable<Record> list2) {
+    public Counter(RecordComparator cmp, List<Record> list1, List<Record> list2) {
         _cmp = cmp;
         _countMap = Counter.countPatterns(cmp, list1, list2);
 
@@ -76,26 +76,15 @@ public class Counter {
 
     protected static TreeMap<Integer, Integer> 
         countPatterns(RecordComparator cmp, 
-                      Iterable<Record> list1, Iterable<Record> list2) 
+                      List<Record> list1, List<Record> list2) 
     {
 
         TreeMap<Integer, Integer> countMap = new TreeMap<>();
 
         // Create an index on list1
 
-        HashMap<String, LinkedList<Record>> index = new HashMap<>();
-        for (Record rec: list1) {
-            String key = rec.blockingKey();
+        HashMap<String, List<Record>> index = Record.block(list1);
 
-            if (index.containsKey(key)) {
-                index.get(key).add(rec);
-            } else {
-                LinkedList<Record> ll = new LinkedList<>();
-                ll.add(rec);
-                index.put(key, ll);
-            }
-        }
-        
         // Compare records in list2 to records in list1
 
         for (Record rec: list2) {
@@ -104,7 +93,7 @@ public class Counter {
             if (!index.containsKey(key)) {
                 continue;
             } else {
-                LinkedList<Record> thisBlock = index.get(key);
+                List<Record> thisBlock = index.get(key);
                 for (Record otherRec: thisBlock) {
                     Integer pattern = cmp.compareIndex(rec, otherRec);
                     if (countMap.containsKey(pattern)) {
