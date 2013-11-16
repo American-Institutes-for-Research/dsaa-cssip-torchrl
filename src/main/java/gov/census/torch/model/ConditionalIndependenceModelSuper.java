@@ -1,5 +1,6 @@
 package gov.census.torch.model;
 
+import gov.census.torch.IModel;
 import gov.census.torch.Record;
 import gov.census.torch.RecordComparator;
 import gov.census.torch.counter.Counter;
@@ -7,7 +8,7 @@ import gov.census.torch.counter.Counter;
 import java.util.Random;
 
 public class ConditionalIndependenceModelSuper
-    //implements Model
+    implements IModel
 {
     public ConditionalIndependenceModelSuper(Random rng, Counter[] counters, int nMatchClasses)
     {
@@ -51,6 +52,7 @@ public class ConditionalIndependenceModelSuper
         return _mWeights;
     }
 
+    @Override
     public double matchScore(Record rec1, Record rec2) {
         double score = 0.0;
         int[] pattern = _cmp.compare(rec1, rec2);
@@ -68,6 +70,12 @@ public class ConditionalIndependenceModelSuper
         return score;
     }
 
+    @Override
+    public RecordComparator recordComparator() {
+        return _cmp;
+    }
+
+    @Override
     public String toString() {
         int precision = 4;
         StringBuilder builder = new StringBuilder();

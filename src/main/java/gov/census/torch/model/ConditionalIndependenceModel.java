@@ -91,6 +91,7 @@ public class ConditionalIndependenceModel
         _matchClass[j] = isMatchClass;
     }
 
+    @Override
     public double matchScore(Record rec1, Record rec2) {
         double score = 0.0;
         int[] pattern = _cmp.compare(rec1, rec2);
@@ -108,6 +109,11 @@ public class ConditionalIndependenceModel
         return score;
     }
 
+    @Override
+    public RecordComparator recordComparator() {
+        return _cmp;
+    }
+
     /**
      * Return a String representation of this model.
      *
@@ -115,6 +121,7 @@ public class ConditionalIndependenceModel
      * weights. This means I need to rewrite RecordComparator to keep track
      * of field names (or rework FileSchema stuff?).
      */
+    @Override
     public String toString() {
         int precision = 4;
         StringBuilder builder = new StringBuilder();
