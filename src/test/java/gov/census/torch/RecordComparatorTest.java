@@ -26,10 +26,10 @@ public class RecordComparatorTest {
 
         schema2 = 
             new FixedWidthFileSchema.Builder()
-            .column("zip", 1, 5)
-            .column("first", 5, 15)
-            .column("last", 15, 25)
             .column("age", 25, 25)
+            .column("last", 15, 25)
+            .column("first", 5, 15)
+            .column("zip", 1, 5)
             .blockingField("zip")
             .build();
 
@@ -122,5 +122,22 @@ public class RecordComparatorTest {
                 }
             }
         }
+    }
+
+    @Test
+    public void testComparisonFields() {
+        Record rec1 = schema1.schema().newRecord(new String[] {
+            "12345", "john", "smith", "99"
+        });
+
+        Record rec2 = schema2.schema().newRecord(new String[] {
+            "11", "smythe", "jane", "54321"
+        });
+
+        String[] fields1 = new String[] {"smith", "99", "john"};
+        String[] fields2 = new String[] {"smythe", "11", "jane"};
+
+        assertThat(cmp.comparisonFields1(rec1), is(fields1));
+        assertThat(cmp.comparisonFields2(rec2), is(fields2));
     }
 }

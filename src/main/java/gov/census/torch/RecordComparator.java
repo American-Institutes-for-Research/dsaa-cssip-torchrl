@@ -185,6 +185,30 @@ public class RecordComparator {
         return index;
     }
 
+    /**
+     * Return an array giving the fields in this record that would be compared.
+     * Use the indices corresponding to schema1 in the Builder constructor.
+     */
+    public String[] comparisonFields1(Record rec) {
+        return extractFields(fieldIndex1, rec);
+    }
+
+    /**
+     * Return an array giving the fields in this record that would be compared.
+     * Use the indices corresponding to schema2 in the Builder constructor.
+     */
+    public String[] comparisonFields2(Record rec) {
+        return extractFields(fieldIndex2, rec);
+    }
+
+    private static String[] extractFields(int[] index, Record rec) {
+        String[] fields = new String[index.length];
+        for (int i = 0; i < index.length; i++)
+            fields[i] = rec.field(index[i]).stringValue();
+
+        return fields;
+    }
+
     private final int _nComparators;
     private final int[] fieldIndex1;
     private final int[] fieldIndex2;

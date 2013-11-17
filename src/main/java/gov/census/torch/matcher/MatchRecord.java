@@ -3,24 +3,24 @@ package gov.census.torch.matcher;
 import gov.census.torch.Record;
 
 public class MatchRecord {
-    public MatchRecord(Record a, Record b, double score) {
-        _a = a;
-        _b = b;
+    public MatchRecord(Record rec1, Record rec2, double score) {
+        _rec1 = rec1;
+        _rec2 = rec2;
         _score = score;
     }
 
-    public Record a() {
-        return _a;
+    public Record record1() {
+        return _rec1;
     }
 
-    public Record b() {
-        return _b;
+    public Record record2() {
+        return _rec2;
     }
 
     public double score() {
         return _score;
     }
 
-    private final Record _a, _b;
+    private final Record _rec1, _rec2;
     private final double _score;
 }

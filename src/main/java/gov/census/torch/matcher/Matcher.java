@@ -3,6 +3,9 @@ package gov.census.torch.matcher;
 import gov.census.torch.IModel;
 import gov.census.torch.Record;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.HashMap;
@@ -13,6 +16,7 @@ public class Matcher {
     public Matcher(IModel model, List<Record> list1, List<Record> list2) {
         _model = model;
         _map = Matcher.computeScores(model, list1, list2);
+        _scores = _map.keySet().toArray(new Double[0]);
     }
 
     protected static TreeMap<Double, List<MatchRecord>>
@@ -28,7 +32,7 @@ public class Matcher {
                 continue;
             } else {
                 for (Record otherRec: blocks.get(key)) {
-                    Double score = model.matchScore(rec, otherRec);
+                    double score = model.matchScore(rec, otherRec);
                     MatchRecord matchRec = new MatchRecord(rec, otherRec, score);
 
                     if (map.containsKey(score)) {
@@ -45,6 +49,22 @@ public class Matcher {
         return map;
     }
 
+    /**
+     * Write matches in CSV format.
+     */
+    public void printMatches(Writer writer, double cutoff)
+        throws IOException
+    {
+        // Create a list of matches from highest score to lowest
+        int leftIndex = Arrays.binarySearch(_scores, cutoff);
+        LinkedList<MatchRecord> list = new LinkedList<>();
+        for (int i = _scores.length - 1; i >= leftIndex; i--)
+            list.addAll(_map.get(_scores[i]));
+
+        
+    }
+
     private final IModel _model;
     private final TreeMap<Double, List<MatchRecord>> _map;
+    private final Double[] _scores;
 }
