@@ -2,7 +2,7 @@ package gov.census.torch;
 
 import gov.census.torch.comparators.ExactComparator;
 
-import java.util.Arrays;
+import java.util.LinkedList;
 
 /**
  * A Fellegi-Sunter record comparator.
@@ -13,14 +13,12 @@ public class RecordComparator {
 
         public Builder(RecordSchema schema1, RecordSchema schema2) 
         {
-            this.schema1 = schema1;
-            this.schema2 = schema2;
-            this.handleBlanks = true;
+            _schema1 = schema1;
+            _schema2 = schema2;
+            _handleBlanks = true;
 
-            insertIndex = 0;
-            fieldIndex1 = new int[INITIAL_CAPACITY];
-            fieldIndex2 = new int[INITIAL_CAPACITY];
-            comparators = new IFieldComparator[INITIAL_CAPACITY];
+            _compareFields = new LinkedList<>();
+            _comparators = new LinkedList<>();
         }
 
         public Builder(RecordSchema schema) {
@@ -35,76 +33,30 @@ public class RecordComparator {
             this(load.schema());
         }
 
-        public Builder compare(int field1, int field2, IFieldComparator cmp) {
-            if (insertIndex == fieldIndex1.length) {
-                int newLength = 2*fieldIndex1.length;
-                fieldIndex1 = Arrays.copyOf(fieldIndex1, newLength);
-                fieldIndex2 = Arrays.copyOf(fieldIndex2, newLength);
-                comparators = Arrays.copyOf(comparators, newLength);
-            }
-
-            fieldIndex1[insertIndex] = field1;
-            fieldIndex2[insertIndex] = field2;
-            comparators[insertIndex] = cmp;
-
-            insertIndex++;
+        public Builder compare(String name, IFieldComparator cmp) {
+            _compareFields.add(name);
+            _comparators.add(cmp);
             return this;
         }
 
-        public Builder compare(String name, IFieldComparator cmp) {
-            return this.compare(schema1.fieldIndex(name),
-                                schema2.fieldIndex(name), cmp);
-        }
-
         public Builder handleBlanks(boolean b) {
-            handleBlanks = b;
+            _handleBlanks = b;
             return this;
         }
 
         public RecordComparator build() {
-            return new RecordComparator(insertIndex, fieldIndex1, fieldIndex2,
-                                        comparators, handleBlanks);
+            String[] compareFields = _compareFields.toArray(new String[0]);
+            IFieldComparator[] comparators = _comparators.toArray(new IFieldComparator[0]);
+
+            return new RecordComparator(_schema1, _schema2, compareFields,
+                                        comparators, _handleBlanks);
         }
 
-        protected final static int INITIAL_CAPACITY = 10;
-
-        private int insertIndex;
-        private int[] fieldIndex1;
-        private int[] fieldIndex2;
-        private IFieldComparator[] comparators;
-        private boolean handleBlanks;
+        private boolean _handleBlanks;
         
-        private final RecordSchema schema1, schema2;
-    }
-
-    private RecordComparator(int nComparators,
-                             int[] fieldIndex1,
-                             int[] fieldIndex2,
-                             IFieldComparator[] comparators,
-                             boolean handleBlanks) 
-    {
-        _nComparators = nComparators;
-        this.fieldIndex1 = Arrays.copyOf(fieldIndex1, nComparators);
-        this.fieldIndex2 = Arrays.copyOf(fieldIndex2, nComparators);
-        this.comparators = Arrays.copyOf(comparators, nComparators);
-        this._handleBlanks = handleBlanks;
-        this.levelOffset = handleBlanks ? 1 : 0;
-
-        int nPatterns = 1;
-        this.levels = new int[nComparators];
-        this.steps = new int[nComparators];
-        this.steps[0] = 1;
-
-        for (int i = 0; i < nComparators; i++) {
-            int nLevels = this.comparators[i].nLevels() + levelOffset;
-            this.levels[i] = nLevels;
-            nPatterns *= nLevels;
-
-            if (i > 0)
-                this.steps[i] = this.steps[i - 1] * this.levels[i - 1];
-        }
-
-        this._nPatterns = nPatterns;
+        private final LinkedList<String> _compareFields;
+        private final LinkedList<IFieldComparator> _comparators;
+        private final RecordSchema _schema1, _schema2;
     }
 
     public static boolean isBlank(Field field) {
@@ -115,8 +67,8 @@ public class RecordComparator {
         int[] pattern = new int[_nComparators];
 
         for (int i = 0; i < pattern.length; i++) {
-            int index1 = fieldIndex1[i];
-            int index2 = fieldIndex2[i];
+            int index1 = _fieldIndex1[i];
+            int index2 = _fieldIndex2[i];
             Field field1 = rec1.field(index1);
             Field field2 = rec2.field(index2);
 
@@ -126,22 +78,22 @@ public class RecordComparator {
                 continue;
             }
 
-            IFieldComparator cmp = comparators[i];
+            IFieldComparator cmp = _comparators[i];
 
             // short circuit evaluation if exact match
             if (field1.stringValue().equals(field2.stringValue())) {
-                pattern[i] = cmp.nLevels() - 1 + levelOffset;
+                pattern[i] = cmp.nLevels() - 1 + _levelOffset;
                 continue;
             }
 
             // if you've made it this far and you're using ExactComparator, then you disagree
             if (cmp.getClass() == ExactComparator.class) {
-                pattern[i] = levelOffset;
+                pattern[i] = _levelOffset;
                 continue;
             }
 
             pattern[i] = 
-                comparators[i].compare(rec1.field(index1), rec2.field(index2)) + levelOffset;
+                _comparators[i].compare(rec1.field(index1), rec2.field(index2)) + _levelOffset;
         }
 
         return pattern;
@@ -166,7 +118,7 @@ public class RecordComparator {
     }
 
     public int nLevels(int i) {
-        return levels[i];
+        return _levels[i];
     }
 
     public int[] patternFor(int index) {
@@ -177,8 +129,8 @@ public class RecordComparator {
 
         for (int i = 0; i < _nComparators; i++) {
             int j = _nComparators - 1 - i;
-            pattern[j] = index / steps[j];
-            index %= steps[j];
+            pattern[j] = index / _steps[j];
+            index %= _steps[j];
         }
 
         return pattern;
@@ -188,25 +140,18 @@ public class RecordComparator {
         int index = 0;
 
         for (int i = 0; i < _nComparators; i++)
-            index += pattern[i] * steps[i];
+            index += pattern[i] * _steps[i];
 
         return index;
     }
 
-    /**
-     * Return an array giving the fields in this record that would be compared.
-     * Use the indices corresponding to schema1 in the Builder constructor.
-     */
-    public String[] comparisonFields1(Record rec) {
-        return extractFields(fieldIndex1, rec);
-    }
-
-    /**
-     * Return an array giving the fields in this record that would be compared.
-     * Use the indices corresponding to schema2 in the Builder constructor.
-     */
-    public String[] comparisonFields2(Record rec) {
-        return extractFields(fieldIndex2, rec);
+    public String[] comparisonFields(Record rec) {
+        if (_schema1 == rec.schema())
+            return extractFields(_fieldIndex1, rec);
+        else if (_schema2 == rec.schema())
+            return extractFields(_fieldIndex2, rec);
+        else
+            throw new IllegalArgumentException("Unknown record schema");
     }
 
     private static String[] extractFields(int[] index, Record rec) {
@@ -217,12 +162,44 @@ public class RecordComparator {
         return fields;
     }
 
-    private final int _nComparators;
-    private final int[] fieldIndex1;
-    private final int[] fieldIndex2;
-    private final IFieldComparator[] comparators;
-    private final int _nPatterns;
+    private RecordComparator(RecordSchema schema1, RecordSchema schema2,
+                             String[] compareFields,
+                             IFieldComparator[] comparators,
+                             boolean handleBlanks) 
+    {
+        _schema1 = schema1;
+        _schema2 = schema2;
+        _nComparators = comparators.length;
+        _comparators = comparators;
+        _handleBlanks = handleBlanks;
+        _levelOffset = handleBlanks ? 1 : 0;
+
+        _fieldIndex1 = new int[_nComparators];
+        _fieldIndex2 = new int[_nComparators];
+        _levels = new int[_nComparators];
+        _steps = new int[_nComparators];
+
+        _steps[0] = 1;
+        int nPatterns = 1;
+
+        for (int i = 0; i < _nComparators; i++) {
+            int nLevels = _comparators[i].nLevels() + _levelOffset;
+            _levels[i] = nLevels;
+            nPatterns *= nLevels;
+
+            if (i > 0)
+                _steps[i] = _steps[i - 1] * _levels[i - 1];
+
+            _fieldIndex1[i] = schema1.fieldIndex(compareFields[i]);
+            _fieldIndex2[i] = schema2.fieldIndex(compareFields[i]);
+        }
+
+        _nPatterns = nPatterns;
+    }
+
+    private final RecordSchema _schema1, _schema2;
+    private final int _nComparators, _nPatterns, _levelOffset;
+    private final int[] _fieldIndex1, _fieldIndex2, _levels, _steps;
+    private final IFieldComparator[] _comparators;
     private final boolean _handleBlanks;
-    private final int[] levels, steps;
-    private final int levelOffset;
 }

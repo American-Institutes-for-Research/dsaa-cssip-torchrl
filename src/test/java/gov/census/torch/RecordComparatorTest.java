@@ -137,7 +137,7 @@ public class RecordComparatorTest {
         String[] fields1 = new String[] {"smith", "99", "john"};
         String[] fields2 = new String[] {"smythe", "11", "jane"};
 
-        assertThat(cmp.comparisonFields1(rec1), is(fields1));
-        assertThat(cmp.comparisonFields2(rec2), is(fields2));
+        assertThat(cmp.comparisonFields(rec1), is(fields1));
+        assertThat(cmp.comparisonFields(rec2), is(fields2));
     }
 }

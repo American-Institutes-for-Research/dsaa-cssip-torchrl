@@ -3,13 +3,19 @@ package gov.census.torch.matcher;
 import gov.census.torch.IModel;
 import gov.census.torch.Record;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.TreeMap;
+
+import com.googlecode.jcsv.CSVStrategy;
+import com.googlecode.jcsv.writer.CSVWriter;
+import com.googlecode.jcsv.writer.internal.CSVWriterBuilder;
 
 public class Matcher {
 
@@ -57,11 +63,41 @@ public class Matcher {
     {
         // Create a list of matches from highest score to lowest
         int leftIndex = Arrays.binarySearch(_scores, cutoff);
+        if (leftIndex == _scores.length)
+            return;
+        else if (leftIndex < 0)
+            leftIndex = -(leftIndex + 1);
+
         LinkedList<MatchRecord> list = new LinkedList<>();
         for (int i = _scores.length - 1; i >= leftIndex; i--)
             list.addAll(_map.get(_scores[i]));
 
-        
+        CSVWriter<MatchRecord> csvWriter =
+            new CSVWriterBuilder<MatchRecord>(writer)
+            .entryConverter(new MatchRecordEntryConverter(_model.recordComparator()))
+            .strategy(CSVStrategy.UK_DEFAULT)
+            .build();
+
+        csvWriter.writeAll(list);
+        writer.flush();
+    }
+
+    /**
+     * Write matches in CSV format to the file with the given name.
+     */
+    public void printMatches(String name, double cutoff) 
+        throws IOException
+    {
+        printMatches(new FileWriter(name), cutoff);
+    }
+
+    /**
+     * Write matches in CSV format to STDOUT
+     */
+    public void printMatches(double cutoff) 
+        throws IOException
+    {
+        printMatches(new OutputStreamWriter(System.out), cutoff);
     }
 
     private final IModel _model;

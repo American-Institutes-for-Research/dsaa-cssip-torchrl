@@ -72,6 +72,7 @@
                                     <includes>
                                         <include>com/googlecode/jcsv/*</include>
                                         <include>com/googlecode/jcsv/reader/**</include>
+                                        <include>com/googlecode/jcsv/writer/**</include>
                                         <include>com/googlecode/jcsv/util/**</include>
                                     </includes>
                                 </filter>
