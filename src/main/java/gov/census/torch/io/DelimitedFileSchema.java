@@ -140,16 +140,6 @@ public class DelimitedFileSchema
         return _schema.newRecord(columns);
     }
 
-    @Override
-    public int fieldIndex(String name) {
-        return _schema.fieldIndex(name);
-    }
-
-    @Override
-    public int columnIndex(String name) {
-        return _schema.columnIndex(name);
-    }
-
     private DelimitedFileSchema(RecordSchema schema, CSVStrategy strategy) {
         _schema = schema;
         _strategy = strategy;
