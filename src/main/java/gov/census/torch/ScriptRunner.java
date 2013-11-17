@@ -13,10 +13,6 @@ import jline.console.ConsoleReader;
 public class ScriptRunner {
 
     public static void main(String[] args) {
-        // if (args.length < 1) {
-        //     System.out.println("Usage: java -jar torch.jar SRIPT_FILE");
-        //     System.exit(1);
-        // }
 
         java.net.URL tv4 =
             ScriptRunner.class.getClassLoader()
@@ -44,11 +40,11 @@ public class ScriptRunner {
                 repl(engine);
         }
         catch(IOException ioe) {
-            System.err.println("There was a problem reading the script file:");
+            System.err.println("There was a problem reading the script file");
             System.err.println(ioe);
             System.exit(1);
         } catch(ScriptException se) {
-            System.err.println("There was a problem executing the script:");
+            System.err.println("There was a problem executing the script");
             System.err.println(se);
             System.exit(1);
         }
@@ -59,8 +55,6 @@ public class ScriptRunner {
     {
         ConsoleReader reader = new ConsoleReader();
         PrintWriter writer = new PrintWriter(reader.getOutput());
-
-        // TODO handle multi-line input by balancing parens
 
         reader.setPrompt("> ");
 
