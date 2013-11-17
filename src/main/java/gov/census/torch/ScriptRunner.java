@@ -2,18 +2,21 @@ package gov.census.torch;
 
 import java.io.FileReader;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.IOException;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
+import jline.console.ConsoleReader;
+
 public class ScriptRunner {
 
     public static void main(String[] args) {
-        if (args.length < 1) {
-            System.out.println("Usage: java -jar torch.jar SRIPT_FILE");
-            System.exit(1);
-        }
+        // if (args.length < 1) {
+        //     System.out.println("Usage: java -jar torch.jar SRIPT_FILE");
+        //     System.exit(1);
+        // }
 
         java.net.URL tv4 =
             ScriptRunner.class.getClassLoader()
@@ -35,7 +38,10 @@ public class ScriptRunner {
                 new InputStreamReader(baseScript.openStream());
             engine.eval(reader);
 
-            engine.eval(new FileReader(args[0]));
+            if (args.length > 0)
+                engine.eval(new FileReader(args[0]));
+            else
+                repl(engine);
         }
         catch(IOException ioe) {
             System.err.println("There was a problem reading the script file:");
@@ -45,6 +51,33 @@ public class ScriptRunner {
             System.err.println("There was a problem executing the script:");
             System.err.println(se);
             System.exit(1);
+        }
+    }
+
+    public static void repl(ScriptEngine engine) 
+        throws IOException, ScriptException
+    {
+        ConsoleReader reader = new ConsoleReader();
+        PrintWriter writer = new PrintWriter(reader.getOutput());
+
+        // TODO handle multi-line input by balancing parens
+
+        reader.setPrompt("> ");
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            try {
+                Object result = engine.eval(line);
+                writer.println(result);
+                writer.flush();
+            }
+            catch(ScriptException e) {
+                writer.println(e);
+                writer.flush();
+            }
+
+            if (line.equalsIgnoreCase("quit"))
+                break;
         }
     }
 }
