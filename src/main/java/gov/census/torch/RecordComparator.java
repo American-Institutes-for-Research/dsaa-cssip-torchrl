@@ -46,7 +46,8 @@ public class RecordComparator {
 
         public RecordComparator build() {
             String[] compareFields = _compareFields.toArray(new String[0]);
-            IFieldComparator[] comparators = _comparators.toArray(new IFieldComparator[0]);
+            IFieldComparator[] comparators = 
+                _comparators.toArray(new IFieldComparator[0]);
 
             return new RecordComparator(_schema1, _schema2, compareFields,
                                         comparators, _handleBlanks);
@@ -59,10 +60,6 @@ public class RecordComparator {
         private final RecordSchema _schema1, _schema2;
     }
 
-    public static boolean isBlank(Field field) {
-        return field.stringValue().trim().isEmpty();
-    }
-
     public int[] compare(Record rec1, Record rec2) {
         int[] pattern = new int[_nComparators];
 
@@ -73,7 +70,7 @@ public class RecordComparator {
             Field field2 = rec2.field(index2);
 
             // short circuit evaluation if either of the fields is blank
-            if (isBlank(field1) || isBlank(field2)) {
+            if (field1.empty() || field2.empty()) {
                 pattern[i] = 0;
                 continue;
             }
