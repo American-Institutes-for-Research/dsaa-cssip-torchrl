@@ -48,6 +48,7 @@ public class ML {
     {
         SemisupervisedLearner lr = 
             new SemisupervisedLearner(unlabeled, labeled, nMatchClasses, lambda);
+        System.out.println(fitMessage(lr.classWeights()));
         return lr.model();
     }
 
