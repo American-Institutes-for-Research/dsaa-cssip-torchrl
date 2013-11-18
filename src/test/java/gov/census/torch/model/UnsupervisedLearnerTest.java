@@ -1,8 +1,8 @@
-package gov.census.torch;
+package gov.census.torch.model;
 
+import gov.census.torch.RecordComparator;
 import gov.census.torch.comparators.StandardComparators;
 import gov.census.torch.io.FixedWidthFileSchema;
-import gov.census.torch.model.UnsupervisedLearner;
 
 import java.util.Arrays;
 import java.util.Random;

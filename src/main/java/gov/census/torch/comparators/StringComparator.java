@@ -34,6 +34,7 @@ public class StringComparator implements IFieldComparator {
 
         for (char[] simiChar : simiChars) {
             adjWeight[simiChar[0]][simiChar[1]] = 3;
+            adjWeight[simiChar[1]][simiChar[0]] = 3;
         }
     }
 
@@ -45,8 +46,8 @@ public class StringComparator implements IFieldComparator {
      * as a and b. These arrays will have a value of 1 in the entries
      * corresponding to common characters, and a value of 0 otherwise.
      */
-    private static int countCommon(String s1, String s2,
-                                   boolean[] flag1, boolean[] flag2, int maxLen)
+    protected static int countCommon(String s1, String s2,
+                                     boolean[] flag1, boolean[] flag2, int maxLen)
     {
         int searchRange = maxLen / 2 - 1;
         int nCommon = 0;
@@ -80,7 +81,9 @@ public class StringComparator implements IFieldComparator {
     /**
      * Count the number of transposed characters between s1 and s2.
      */
-    private static int countTranspositions(String s1, String s2, boolean[] flag1, boolean[] flag2) {
+    protected static int countTranspositions(String s1, String s2, 
+                                             boolean[] flag1, boolean[] flag2) 
+    {
         int nTrans2 = 0;
         int k = 0;
 
@@ -103,37 +106,33 @@ public class StringComparator implements IFieldComparator {
     }
 
     /**
-     * The number of similar characters is the number of common characters plus
-     * 0.3 for each pair of characters that appears in simiChars. A letter in
-     * s1 can match multiple letters in s2.
+     * The number of character pairs that appear in <code>simiChars</code>. Doesn't count common
+     * characters (as indicated by <code>flag1</code> and <code>flag2</code>).
      */
-    private static int countSimilar(String s1, String s2, int minLen, int nCommon,
-                                    boolean[] flag1, boolean[] flag2)
+    protected static int countSimilar(String s1, String s2,
+                                      boolean[] flag1, boolean[] flag2)
     {
         int nSimi = 0;
-        if (minLen > nCommon) {
-            for (int i = 0; i < s1.length(); i++) {
-                if (!flag1[i]) {
-                    for (int j = 0; j < s2.length(); j++) {
-                        if (!flag2[j]) {
-                            if (adjWeight[s1.charAt(i)][s2.charAt(j)] > 0) {
-                                nSimi++;
-                                break;
-                            }
+        for (int i = 0; i < s1.length(); i++) {
+            if (!flag1[i]) {
+                for (int j = 0; j < s2.length(); j++) {
+                    if (!flag2[j]) {
+                        if (adjWeight[s1.charAt(i)][s2.charAt(j)] > 0) {
+                            nSimi++;
+                            break;
                         }
                     }
                 }
             }
         }
 
-        // TODO change code below so that this can return nSimi
         return nSimi;
     }
 
     public StringComparator(double[] levels, int flags) {
-        this.adjSimilarCharacter = (flags | ADJ_SIMILAR_CHARACTER) > 0;
-        this.adjWinklerPrefix = (flags | ADJ_WINKLER_PREFIX) > 0;
-        this.adjLongStrings = (flags | ADJ_LONG_STRINGS) > 0;
+        this.adjSimilarCharacter = (flags & ADJ_SIMILAR_CHARACTER) > 0;
+        this.adjWinklerPrefix = (flags & ADJ_WINKLER_PREFIX) > 0;
+        this.adjLongStrings = (flags & ADJ_LONG_STRINGS) > 0;
         this.levels = levels;
     }
 
@@ -177,8 +176,8 @@ public class StringComparator implements IFieldComparator {
 
         // adjust for similarities in nonmatched characters
         double nSimi = (double)nCommon;
-        if (this.adjSimilarCharacter) {
-            nSimi += 0.3 * countSimilar(s1, s2, minLen, nCommon, flag1, flag2);
+        if (this.adjSimilarCharacter && minLen > nCommon) {
+            nSimi += 0.3 * countSimilar(s1, s2, flag1, flag2);
         }
 
         // main weight computation
