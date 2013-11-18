@@ -5,12 +5,20 @@ import gov.census.torch.comparators.ExactComparator;
 import java.util.LinkedList;
 
 /**
- * A Fellegi-Sunter record comparator.
+ * An object which computes the matching pattern betwen two {@link Record}s.
  */
 public class RecordComparator {
 
+    /**
+     * A builder object to simplify constructing a new
+     * <code>RecordComparator</code> object.
+     */
     public static class Builder {
 
+        /**
+         * Constructs a new Builder object. The resulting <code>RecordComparator</code> object will
+         * compare records of type <code>schema1</code> and <code>schema2</code>.
+         */
         public Builder(RecordSchema schema1, RecordSchema schema2) 
         {
             _schema1 = schema1;
@@ -21,29 +29,50 @@ public class RecordComparator {
             _comparators = new LinkedList<>();
         }
 
+        /**
+         * Constructs a new Builder object. The resulting <code>RecordComparator</code> object will
+         * compare records with the same <code>schema</code>.
+         */
         public Builder(RecordSchema schema) {
             this(schema, schema);
         }
 
+        /**
+         * Constructs a new Builder object. Use the record schemas returned by <code>load1</code> and
+         * <code>load2</code>.
+         */
         public Builder(IRecordLoader load1, IRecordLoader load2) {
             this(load1.schema(), load2.schema());
         }
 
+
+        /**
+         * Constructs a new Builder object. Use the record schema returned by <code>load</code>.
+         */
         public Builder(IRecordLoader load) {
             this(load.schema());
         }
 
+        /**
+         * Adds a comparator to the field with the given <code>name</code>.
+         */
         public Builder compare(String name, IFieldComparator cmp) {
             _compareFields.add(name);
             _comparators.add(cmp);
             return this;
         }
 
+        /**
+         * Indicates whether the <code>RecordComparator</code> should handle blank values.
+         */
         public Builder handleBlanks(boolean b) {
             _handleBlanks = b;
             return this;
         }
 
+        /**
+         * Builds the <code>RecordComparator</code> object.
+         */
         public RecordComparator build() {
             String[] compareFields = _compareFields.toArray(new String[0]);
             IFieldComparator[] comparators = 
@@ -60,6 +89,12 @@ public class RecordComparator {
         private final RecordSchema _schema1, _schema2;
     }
 
+    /**
+     * Computes the comparison pattern between two <code>Record</code>s. The length of the
+     * comparison pattern is <code>nComparators()</code>.
+     *
+     * @see #nComparators
+     */
     public int[] compare(Record rec1, Record rec2) {
         int[] pattern = new int[_nComparators];
 
@@ -96,28 +131,55 @@ public class RecordComparator {
         return pattern;
     }
 
+    /**
+     * Same as {@link #compare} but returns the comparison pattern as an <code>int</code>. The
+     * <code>int</code> value is a number between 0 and <code>nPatterns() - 1</code>, and it can be
+     * converted to an array by calling <code>patternFor(int)</code>.
+     *
+     * @see #nPatterns
+     * @see #patternFor
+     */
     public int compareIndex(Record rec1, Record rec2) {
         int[] pattern = compare(rec1, rec2);
 
         return patternIndex(pattern);
     }
 
+    /**
+     * Indicates whether this <code>RecordComparator</code> handles blanks specially.
+     */
     public boolean handleBlanks() {
         return _handleBlanks;
     }
 
+    /**
+     * The number of field comparators used by this <code>RecordComparator</code>.
+     */
     public int nComparators() {
         return _nComparators;
     }
 
+    /**
+     * The number of different comparison patterns that can be returned.
+     */
     public int nPatterns() {
         return _nPatterns;
     }
 
+    /**
+     * The number of different levels (values) that can be returned by the <code>i</code>th field
+     * comparator.
+     */
     public int nLevels(int i) {
         return _levels[i];
     }
 
+    /**
+     * The array-valued comparison corresponding to the given <code>index</code>.
+     *
+     * @throws ArrayIndexOutOfBoundsException if the <code>index</code> doesn't corresond to a
+     * pattern.
+     */
     public int[] patternFor(int index) {
         if (index < 0 || index >= _nPatterns)
             throw new ArrayIndexOutOfBoundsException();
@@ -133,6 +195,11 @@ public class RecordComparator {
         return pattern;
     }
 
+    /**
+     * Returns the <code>int</code> value corresponding to the given <code>pattern</code>. Note that
+     * if <code>pattern</code> isn't a valid value that could be returned by <code>compare(Record,
+     * Record)</code> then the returned value is nonsense.
+     */
     public int patternIndex(int[] pattern) {
         int index = 0;
 
@@ -142,6 +209,12 @@ public class RecordComparator {
         return index;
     }
 
+    /**
+     * Returns the fields in the given <code>Record</code> that would be used in a comparison.
+     *
+     * @throws IllegalArgumentException if the given <code>Record</code>'s schema isn't known by
+     * this <code>RecordComparator</code>.
+     */
     public String[] comparisonFields(Record rec) {
         if (_schema1 == rec.schema())
             return extractFields(_fieldIndex1, rec);
