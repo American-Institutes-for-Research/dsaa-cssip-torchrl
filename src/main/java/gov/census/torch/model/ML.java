@@ -38,6 +38,19 @@ public class ML {
         return lr.model();
     }
 
+    /**
+     * Fit a mixture model using labeled and unlabeled data.
+     *
+     * @param lambda the relative weight of labeled to unlabeled data.
+     */
+    public static MixtureModel fit(Counter unlabeled, Counter[] labeled,
+                                   int nMatchClasses, double lambda)
+    {
+        SemisupervisedLearner lr = 
+            new SemisupervisedLearner(unlabeled, labeled, nMatchClasses, lambda);
+        return lr.model();
+    }
+
     private static String fitMessage(double[] classWeights) {
         StringBuilder b = new StringBuilder();
         b.append(String.format("Fitted %d classes with weights ( ", classWeights.length));
