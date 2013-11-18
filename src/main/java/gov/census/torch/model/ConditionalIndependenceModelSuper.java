@@ -97,14 +97,6 @@ public class ConditionalIndependenceModelSuper
         return builder.toString();
     }
 
-    private void initWeights(Random rng) {
-        for (int i = 0; i < _nClasses; i++) {
-            for (int j = 0; j < _cmp.nComparators(); j++) {
-                ConditionalIndependenceModel.partitionOne(rng, _mWeights[i][j]);
-            }
-        }
-    }
-
     /**
      * Compute the ML estimate for the labeled data.
      */
@@ -136,6 +128,5 @@ public class ConditionalIndependenceModelSuper
 
     private final int _nClasses, _nMatchClasses;
     private final RecordComparator _cmp;
-    private final double[][][] _mWeights;
-    private final double[][][] _logMWeights;
+    private final double[][][] _mWeights, _logMWeights;
 }

@@ -10,8 +10,15 @@ import javax.script.ScriptException;
 
 import jline.console.ConsoleReader;
 
+/**
+ * A minimal application for running scripts or starting a repl.
+ */
 public class ScriptRunner {
 
+    /**
+     * Run a script or start a repl. If <code>args[0]</code> exists, treats it as a file name and
+     * attempts to evaluate it. Otherwise starts a repl.
+     */
     public static void main(String[] args) {
 
         java.net.URL tv4 =
@@ -50,7 +57,10 @@ public class ScriptRunner {
         }
     }
 
-    public static void repl(ScriptEngine engine) 
+    /**
+     * Start a repl that evaluates incoming lines using <code>engine</code>.
+     */
+    protected static void repl(ScriptEngine engine) 
         throws IOException, ScriptException
     {
         ConsoleReader reader = new ConsoleReader();

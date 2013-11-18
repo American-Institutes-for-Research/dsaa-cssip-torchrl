@@ -10,6 +10,12 @@ import java.util.List;
  */
 public class Record {
 
+    /**
+     * Perform blocking on a list of <code>Record</code>.
+     *
+     * @return a <code>HashMap</code> that associates blocking keys to the list of
+     * <code>Record</code> with that blocking key.
+     */
     public static HashMap<String, List<Record>> block(List<Record> list) {
         HashMap<String, List<Record>> blocks = new HashMap<>();
         for (Record rec: list) {
@@ -27,30 +33,45 @@ public class Record {
         return blocks;
     }
 
+    /**
+     * Returns the <code>i</code>th field in this <code>Record</code>.
+     */
     public Field field(int i) {
         return _fields[i];
     }
 
+    /**
+     * Return the blocking key.
+     */
     public String blockingKey() {
         return _blockingKey;
     }
 
+    /**
+     * Returns the unique identifier for this field. Returns an empty <code>String</code> if the
+     * <code>Record</code> doesn't have a unique identifier.
+     */
     public String id() {
         return _id;
     }
 
+    /**
+     * Returns the number of fields in this <code>Record</code>.
+     */
     public int nFields() {
         return _fields.length;
     }
 
+    /**
+     * Returns the {@link RecordSchema} for this <code>Record</code>.
+     */
     public RecordSchema schema() {
         return _schema;
     }
 
-    protected Record(String blockingKey, String id, Field[] fields) {
-        this(null, blockingKey, id, fields);
-    }
-    
+    /**
+     * Construct a new <code>Record</code> from the given values.
+     */
     protected Record(RecordSchema schema, String blockingKey, String id, Field[] fields) 
     {
         _schema = schema;
@@ -59,6 +80,10 @@ public class Record {
         _fields = Arrays.copyOf(fields, fields.length);
     }
 
+    /**
+     * Two <code>Record</code>s are equal if they have the same schema, id, blocking key, and
+     * fields.
+     */
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Record))
@@ -69,10 +94,10 @@ public class Record {
         if (_schema != rec.schema())
             return false;
 
-        if (!_blockingKey.equals(rec.blockingKey()))
+        if (!_id.equals(rec.id()))
             return false;
 
-        if (!_id.equals(rec.id()))
+        if (!_blockingKey.equals(rec.blockingKey()))
             return false;
 
         for (int i = 0; i < _fields.length; i++)
