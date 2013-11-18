@@ -1,26 +1,23 @@
 package gov.census.torch.model;
 
-import gov.census.torch.IModel;
-import gov.census.torch.Record;
 import gov.census.torch.counter.Counter;
 import gov.census.torch.RecordComparator;
 
 import java.util.Arrays;
 import java.util.Random;
 
-public class ConditionalIndependenceModel 
-    implements IModel
+public class UnsupervisedLearner
 {
 
     public final static double TOLERANCE = 0.0000001;
     public final static int MAX_ITER = 50000;
 
     /**
-     * Construct a new ConditionalIndependenceModel by fitting unlabeled data.
-     * After construction, it's up to the user to declare which of the classes
-     * correspond to matches for the purpose of computing match weights.
+     * Construct a new UnsupervisedLearner by fitting unlabeled data.  After construction, it's up
+     * to the user to declare which of the classes correspond to matches for the purpose of
+     * computing match weights.
      */
-    public ConditionalIndependenceModel(Random rng, Counter counter, int nClasses)
+    public UnsupervisedLearner(Random rng, Counter counter, int nClasses)
     {
         if (nClasses < 2)
             throw new IllegalArgumentException("'nClasses' must be greater than 1");
@@ -41,9 +38,11 @@ public class ConditionalIndependenceModel
         _classWeights = new double[nClasses];
 
         estimate(rng, counter);
+
+        _model = null;
     }
 
-    public ConditionalIndependenceModel(Counter counter, int nClasses) {
+    public UnsupervisedLearner(Counter counter, int nClasses) {
         this(new Random(), counter, nClasses);
     }
 
@@ -91,56 +90,33 @@ public class ConditionalIndependenceModel
         _matchClass[j] = isMatchClass;
     }
 
-    @Override
-    public double matchScore(Record rec1, Record rec2) {
-        double score = 0.0;
-        int[] pattern = _cmp.compare(rec1, rec2);
-
-        for (int j = 0; j < _nClasses; j++) {
-                if (_matchClass[j]) {
-                    for (int k = 0; k < _cmp.nComparators(); k++)
-                        score += _logMWeights[j][k][pattern[k]];
-                } else {
-                    for (int k = 0; k < _cmp.nComparators(); k++)
-                        score -= _logMWeights[j][k][pattern[k]];
-                }
-        }
-
-        return score;
-    }
-
-    @Override
-    public RecordComparator recordComparator() {
-        return _cmp;
-    }
-
     /**
-     * Return a String representation of this model.
-     *
-     * TODO: Eventually this should print the field names next to the match
-     * weights. This means I need to rewrite RecordComparator to keep track
-     * of field names (or rework FileSchema stuff?).
+     * Returns the mixture model defined by the fitted probabilities. The first time this method
+     * is called it constructs the model. This will fail if there are no match classes.
      */
-    @Override
-    public String toString() {
-        int precision = 4;
-        StringBuilder builder = new StringBuilder();
-        builder.append(String.format("Model: conditional independence with %d classes%n", _nClasses));
+    public MixtureModel model() {
+        if (_model == null) {
+            // shuffle _mWeights so that the match classes are at the front
+            double[][][] mWeights = new double[_nClasses][][];
 
-        for (int j = 0; j < _nClasses; j++) {
-            builder.append(String.format("Class %2d (%6.4f):%n", j, _classWeights[j]));
-            builder.append(String.format("%-7s%s%n", "Field", "Weights"));
-
-            for (int k = 0; k < _cmp.nComparators(); k++) {
-                builder.append(String.format("%-7d", k));
-                for (int x = 0; x < _cmp.nLevels(k); x++)
-                    builder.append(String.format("%6.4f ", _mWeights[j][k][x]));
-
-                builder.append("\n");
+            int nMatchClasses = 0;
+            for (int j = 0; j < _nClasses; j++) {
+                if (_matchClass[j]) {
+                    mWeights[nMatchClasses++] = _mWeights[j];
+                }
             }
+
+            int i = nMatchClasses;
+            for (int j = 0; j < _nClasses; j++) {
+                if (!_matchClass[j]) {
+                    mWeights[i++] = _mWeights[j];
+                }
+            }
+
+            _model = new MixtureModel(_cmp, mWeights, nMatchClasses);
         }
 
-        return builder.toString();
+        return _model;
     }
 
     /**
@@ -287,4 +263,5 @@ public class ConditionalIndependenceModel
     private final double[][][] _mWeights;
     private final double[][][] _logMWeights;
     private final double[] _classWeights;
+    private MixtureModel _model;
 }

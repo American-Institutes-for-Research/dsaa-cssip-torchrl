@@ -1,16 +1,13 @@
 package gov.census.torch.model;
 
-import gov.census.torch.IModel;
-import gov.census.torch.Record;
 import gov.census.torch.RecordComparator;
 import gov.census.torch.counter.Counter;
 
 import java.util.Random;
 
-public class ConditionalIndependenceModelSuper
-    implements IModel
+public class SupervisedLearner
 {
-    public ConditionalIndependenceModelSuper(Random rng, Counter[] counters, int nMatchClasses)
+    public SupervisedLearner(Random rng, Counter[] counters, int nMatchClasses)
     {
         if (counters.length < 2)
             throw new IllegalArgumentException("need at least two classes");
@@ -38,63 +35,15 @@ public class ConditionalIndependenceModelSuper
         }
 
         estimate(rng, counters);
+        _model = new MixtureModel(_cmp, _mWeights, _nMatchClasses);
     }
 
-    public ConditionalIndependenceModelSuper(Counter[] counters, int nMatchClasses) {
+    public SupervisedLearner(Counter[] counters, int nMatchClasses) {
         this(new Random(), counters, nMatchClasses);
     }
 
-    public int nClasses() {
-        return _nClasses;
-    }
-
-    public double[][][] multinomialWeights() {
-        return _mWeights;
-    }
-
-    @Override
-    public double matchScore(Record rec1, Record rec2) {
-        double score = 0.0;
-        int[] pattern = _cmp.compare(rec1, rec2);
-
-        for (int j = 0; j < _nMatchClasses; j++) {
-            for (int k = 0; k < _cmp.nComparators(); k++)
-                score += _logMWeights[j][k][pattern[k]];
-        }
-
-        for (int j = _nMatchClasses; j < _nClasses; j++) {
-            for (int k = 0; k < _cmp.nComparators(); k++)
-                score -= _logMWeights[j][k][pattern[k]];
-        }
-
-        return score;
-    }
-
-    @Override
-    public RecordComparator recordComparator() {
-        return _cmp;
-    }
-
-    @Override
-    public String toString() {
-        int precision = 4;
-        StringBuilder builder = new StringBuilder();
-        builder.append(String.format("Model: conditional independence with %d classes%n", _nClasses));
-
-        for (int j = 0; j < _nClasses; j++) {
-            builder.append(String.format("Class %2d:%n", j));
-            builder.append(String.format("%-7s%s%n", "Field", "Weights"));
-
-            for (int k = 0; k < _cmp.nComparators(); k++) {
-                builder.append(String.format("%-7d", k));
-                for (int x = 0; x < _cmp.nLevels(k); x++)
-                    builder.append(String.format("%6.4f ", _mWeights[j][k][x]));
-
-                builder.append("\n");
-            }
-        }
-
-        return builder.toString();
+    public MixtureModel model() {
+        return _model;
     }
 
     /**
@@ -129,4 +78,5 @@ public class ConditionalIndependenceModelSuper
     private final int _nClasses, _nMatchClasses;
     private final RecordComparator _cmp;
     private final double[][][] _mWeights, _logMWeights;
+    private final MixtureModel _model;
 }

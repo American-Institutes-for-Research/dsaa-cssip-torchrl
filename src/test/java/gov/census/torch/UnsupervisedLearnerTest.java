@@ -2,7 +2,7 @@ package gov.census.torch;
 
 import gov.census.torch.comparators.StandardComparators;
 import gov.census.torch.io.FixedWidthFileSchema;
-import gov.census.torch.model.ConditionalIndependenceModel;
+import gov.census.torch.model.UnsupervisedLearner;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -11,11 +11,11 @@ import org.junit.*;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.*;
 
-public class ConditionalIndependenceModelTest {
+public class UnsupervisedLearnerTest {
 
     private FixedWidthFileSchema schema1, schema2;
     private RecordComparator cmp;
-    private ConditionalIndependenceModel model;
+    private UnsupervisedLearner lr;
 
     @Before
     public void setUp() {
@@ -44,15 +44,13 @@ public class ConditionalIndependenceModelTest {
             .compare("first", StandardComparators.STRING)
             .handleBlanks(false)
             .build();
-
-        // model = new ConditionalIndependenceModel(cmp, 3);
     }
 
     @Test
     public void testPartitionOne() {
         Random rng = new Random();
         double[] ary = new double[10];
-        ConditionalIndependenceModel.partitionOne(rng, ary);
+        UnsupervisedLearner.partitionOne(rng, ary);
 
         double total = 0.0;
         for (int i = 0; i < ary.length; i++) {
