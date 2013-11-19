@@ -26,6 +26,7 @@ public class DelimitedFileSchema
         public final static char COMMENT_CHAR = '#';
         public final static char QUOTE_CHAR = '"';
         public final static boolean IGNORE_EMPTY_LINES = true;
+        public final static String BLANK_INDICATOR = "NA";
 
         public Builder() {
             _delimiter = ',';
@@ -81,6 +82,11 @@ public class DelimitedFileSchema
             return this;
         }
 
+        public Builder blankIndicator(String indicator) {
+            _blankIndicator = indicator;
+            return this;
+        }
+
         public DelimitedFileSchema build() {
             String[] columns = _columns.toArray(new String[0]);
             String[] blockingFields = _blockingFields.toArray(new String[0]);
@@ -90,12 +96,13 @@ public class DelimitedFileSchema
             CSVStrategy strategy = 
                 new CSVStrategy(_delimiter, QUOTE_CHAR, COMMENT_CHAR, _header, IGNORE_EMPTY_LINES);
 
-            return new DelimitedFileSchema(schema, strategy);
+            return new DelimitedFileSchema(schema, strategy, _blankIndicator);
         }
 
         private char _delimiter;
         private boolean _header;
         private LinkedList<String> _columns, _blockingFields, _idFields;
+        private String _blankIndicator;
     }
 
     @Override
@@ -137,14 +144,21 @@ public class DelimitedFileSchema
 
     @Override
     public Record parseEntry(String... columns) {
+        for (int i = 0; i < columns.length; i++) {
+            if (columns[i].equals(_blankIndicator))
+                columns[i] = "";
+        }
+
         return _schema.newRecord(columns);
     }
 
-    private DelimitedFileSchema(RecordSchema schema, CSVStrategy strategy) {
+    private DelimitedFileSchema(RecordSchema schema, CSVStrategy strategy, String blankIndicator) {
         _schema = schema;
         _strategy = strategy;
+        _blankIndicator = blankIndicator;
     }
 
     private final RecordSchema _schema;
     private final CSVStrategy _strategy;
+    private final String _blankIndicator;
 }
