@@ -12,7 +12,7 @@ public class SupervisedLearner
         if (tallies.length < 2)
             throw new IllegalArgumentException("need at least two classes");
 
-        if (nMatchClasses >= tallies.length - 1)
+        if (nMatchClasses > tallies.length - 1)
             throw new IllegalArgumentException("need at least one nonmatch class");
 
         for (int j = 1; j < tallies.length; j++) {

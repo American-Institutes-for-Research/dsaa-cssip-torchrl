@@ -44,7 +44,7 @@ public class Counter {
      * @return a length 2 Tally array, in which the first element represents the observed patterns
      * among match pairs, and the second element represents observed patterns amont nonmatch pairs.
      */
-    public Tally[] tallyTruth(RecordComparator cmp, List<Record> list1, List<Record> list2) {
+    public static Tally[] tallyTruth(RecordComparator cmp, List<Record> list1, List<Record> list2) {
         IncrementalTally trueMatch = new IncrementalTally(cmp);
         IncrementalTally trueNonmatch = new IncrementalTally(cmp);
 
