@@ -1,6 +1,6 @@
 package gov.census.torch.model;
 
-import gov.census.torch.counter.Counter;
+import gov.census.torch.counter.Tally;
 import gov.census.torch.RecordComparator;
 
 import java.util.Arrays;
@@ -14,8 +14,8 @@ public class SemisupervisedLearner
     public final static double TOLERANCE = 0.0000001;
     public final static int MAX_ITER = 50000;
 
-    public SemisupervisedLearner(Random rng, Counter unlabeled,
-                                 Counter[] labeled, int nMatchClasses,
+    public SemisupervisedLearner(Random rng, Tally unlabeled,
+                                 Tally[] labeled, int nMatchClasses,
                                  double lambda)
     {
         if (labeled.length < 2)
@@ -27,7 +27,7 @@ public class SemisupervisedLearner
         for (int j = 0; j < labeled.length; j++) {
             if (unlabeled.recordComparator() != labeled[j].recordComparator())
                 throw new IllegalArgumentException(
-                        "all counters should have the same record comparator");
+                        "all tallies should have the same record comparator");
 
         }
 
@@ -50,8 +50,8 @@ public class SemisupervisedLearner
         _model = new MixtureModel(_cmp, _mWeights, _nMatchClasses);
     }
 
-    public SemisupervisedLearner(Counter unlabeled, 
-                                 Counter[] labeled, int nMatchClasses, double lambda) 
+    public SemisupervisedLearner(Tally unlabeled, 
+                                 Tally[] labeled, int nMatchClasses, double lambda) 
     {
         this(new Random(), unlabeled, labeled, nMatchClasses, lambda);
     }
@@ -80,7 +80,7 @@ public class SemisupervisedLearner
     /**
      * Approximate the ML estimate for the given counts.
      */
-    private void estimate(Random rng, Counter[] labeled, Counter unlabeled) {
+    private void estimate(Random rng, Tally[] labeled, Tally unlabeled) {
         int[] ucounts = unlabeled.nonzeroCounts();
         int[][] upats = unlabeled.nonzeroPatterns();
 

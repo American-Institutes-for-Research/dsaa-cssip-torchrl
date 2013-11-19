@@ -1,6 +1,6 @@
 package gov.census.torch.model;
 
-import gov.census.torch.counter.Counter;
+import gov.census.torch.counter.Tally;
 
 import java.util.Arrays;
 
@@ -12,8 +12,8 @@ public class ML {
      * Fit a mixture model tow unlabeled data. This method assumes that the latent class with
      * the smallest probability is the unique match class.
      */
-    public static MixtureModel fit(Counter counter, int nClasses) {
-        UnsupervisedLearner lr = new UnsupervisedLearner(counter, nClasses);
+    public static MixtureModel fit(Tally tally, int nClasses) {
+        UnsupervisedLearner lr = new UnsupervisedLearner(tally, nClasses);
         double[] classWeights = lr.classWeights();
         double minWeight = Double.MAX_VALUE;
         int minIndex = -1;
@@ -33,8 +33,8 @@ public class ML {
     /**
      * Fit a mixture model to labeled data.
      */
-    public static MixtureModel fit(Counter[] counters, int nMatchClasses) {
-        SupervisedLearner lr = new SupervisedLearner(counters, nMatchClasses);
+    public static MixtureModel fit(Tally[] tallies, int nMatchClasses) {
+        SupervisedLearner lr = new SupervisedLearner(tallies, nMatchClasses);
         return lr.model();
     }
 
@@ -43,7 +43,7 @@ public class ML {
      *
      * @param lambda the relative weight of labeled to unlabeled data.
      */
-    public static MixtureModel fit(Counter unlabeled, Counter[] labeled,
+    public static MixtureModel fit(Tally unlabeled, Tally[] labeled,
                                    int nMatchClasses, double lambda)
     {
         SemisupervisedLearner lr = 

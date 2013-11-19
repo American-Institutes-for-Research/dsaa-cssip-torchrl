@@ -1,6 +1,6 @@
 package gov.census.torch.model;
 
-import gov.census.torch.counter.Counter;
+import gov.census.torch.counter.Tally;
 import gov.census.torch.RecordComparator;
 
 import java.util.Arrays;
@@ -17,14 +17,14 @@ public class UnsupervisedLearner
      * to the user to declare which of the classes correspond to matches for the purpose of
      * computing match weights.
      */
-    public UnsupervisedLearner(Random rng, Counter counter, int nClasses)
+    public UnsupervisedLearner(Random rng, Tally tally, int nClasses)
     {
         if (nClasses < 2)
             throw new IllegalArgumentException("'nClasses' must be greater than 1");
 
         _nClasses = nClasses;
         _matchClass = new boolean[nClasses];
-        _cmp = counter.recordComparator();
+        _cmp = tally.recordComparator();
 
         _mWeights = new double[nClasses][_cmp.nComparators()][];
         _logMWeights = new double[nClasses][_cmp.nComparators()][];
@@ -37,13 +37,13 @@ public class UnsupervisedLearner
 
         _classWeights = new double[nClasses];
 
-        estimate(rng, counter);
+        estimate(rng, tally);
 
         _model = null;
     }
 
-    public UnsupervisedLearner(Counter counter, int nClasses) {
-        this(new Random(), counter, nClasses);
+    public UnsupervisedLearner(Tally tally, int nClasses) {
+        this(new Random(), tally, nClasses);
     }
 
     /**
@@ -133,10 +133,10 @@ public class UnsupervisedLearner
         }
     }
 
-    private void estimate(Random rng, Counter counter) {
+    private void estimate(Random rng, Tally tally) {
 
-        int[] counts = counter.nonzeroCounts();
-        int[][] patterns = counter.nonzeroPatterns();
+        int[] counts = tally.nonzeroCounts();
+        int[][] patterns = tally.nonzeroPatterns();
 
         initWeights(rng);
 
