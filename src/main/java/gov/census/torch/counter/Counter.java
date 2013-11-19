@@ -8,8 +8,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
+/**
+ * An object that counts occurences of record comparison patterns.
+ */
 public class Counter {
 
+    /**
+     * Constructs a new <code>Counter</code> instance. This constructor calls {@link
+     * Counter#countPatterns} on its arguments.
+     */
     public Counter(RecordComparator cmp, List<Record> list1, List<Record> list2) {
         _cmp = cmp;
         _countMap = Counter.countPatterns(cmp, list1, list2);
@@ -40,14 +47,27 @@ public class Counter {
         _maxCount = maxCount;
     }
 
+    /**
+     * Returns the <code>RecordComparator</code> object used to produce comparison patterns.
+     */
     public RecordComparator recordComparator() {
         return _cmp;
     }
 
+    /**
+     * Returns the nonzero counts. Each element of the returned array is a positive integer
+     * corresponding to the number of times a certain pattern was observed. The <code>i</code>th
+     * entry corresponds to the <code>i</code>th pattern in {@link #nonzeroPatterns}.
+     */
     public int[] nonzeroCounts() {
         return _nonzeroCounts;
     }
 
+    /**
+     * Returns an array of patterns that were observed at least once. The number of times the
+     * <code>i</code>th pattern was observed is given by the <code>i</code>th entry in {@link
+     * nonzeroCounts}.
+     */
     public int[][] nonzeroPatterns() {
         return _nonzeroPatterns;
     }
@@ -74,6 +94,9 @@ public class Counter {
         return builder.toString();
     }
 
+    /**
+     * Returns a <code>HashMap</code> of pattern counts.
+     */
     protected static TreeMap<Integer, Integer> 
         countPatterns(RecordComparator cmp, 
                       List<Record> list1, List<Record> list2) 
