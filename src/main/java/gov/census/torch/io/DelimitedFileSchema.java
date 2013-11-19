@@ -34,6 +34,7 @@ public class DelimitedFileSchema
             _columns = new LinkedList<>(); 
             _blockingFields = new LinkedList<>(); 
             _idFields = new LinkedList<>();
+            _blankIndicator = BLANK_INDICATOR;
         }
 
         public Builder delimiter(char d) {

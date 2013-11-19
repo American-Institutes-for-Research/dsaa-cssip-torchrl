@@ -66,7 +66,9 @@ public class RecordSchema
      */
     public Record newRecord(String[] columns) {
         if (columns.length != _columns.length)
-            throw new IllegalArgumentException("not enough columns");
+            throw new IllegalArgumentException(
+                    "too few columns to construct a record: " +
+                    Arrays.toString(columns));
 
         HashMap<String, String> map = new HashMap<>();
         for (int i = 0; i < _columns.length; i++)
