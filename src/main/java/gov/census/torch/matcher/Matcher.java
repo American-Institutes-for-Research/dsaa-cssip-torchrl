@@ -100,6 +100,41 @@ public class Matcher {
         printMatches(new OutputStreamWriter(System.out), cutoff);
     }
 
+    /**
+     * Print pairs with match scores immediately above and below the given point.
+     */
+    public void browse(double score) 
+        throws IOException
+    {
+        LinkedList<MatchRecord> list = new LinkedList<>();
+
+        Double higher = _map.higherKey(score);
+        if (higher != null)
+            list.addAll(_map.get(higher));
+
+        if (_map.containsKey(score))
+            list.addAll(_map.get(score));
+        
+        Double lower = _map.lowerKey(score);
+        if (lower != null)
+            list.addAll(_map.get(lower));
+
+        printMatchRecords(list);
+    }
+
+    protected void printMatchRecords(List<MatchRecord> list) 
+        throws IOException
+    {
+        CSVWriter<MatchRecord> csvWriter =
+            new CSVWriterBuilder<MatchRecord>(new OutputStreamWriter(System.out))
+            .entryConverter(new MatchRecordEntryConverter(_model.recordComparator()))
+            .strategy(CSVStrategy.UK_DEFAULT)
+            .build();
+
+        csvWriter.writeAll(list);
+        System.out.flush();
+    }
+
     private final IModel _model;
     private final TreeMap<Double, List<MatchRecord>> _map;
     private final Double[] _scores;

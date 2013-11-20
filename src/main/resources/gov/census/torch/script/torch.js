@@ -9,6 +9,25 @@ PRORATED = StandardComparators.PRORATED;
 YEAR = StandardComparators.YEAR;
 STRING = StandardComparators.STRING;
 
+GLOBAL_NAMES = new java.util.HashSet([
+        "context", "print", "println", "null", "tv4",
+        "Script", "ScriptSchema", "StandardComparators", "isDefined", "ls",
+        "EXACT", "PRORATED", "YEAR", "STRING"
+]);
+GLOBAL_NAMES.add("GLOBAL_NAMES");
+
+function ls() {
+    var ary = [];
+
+    for (var name in this) {
+        if (!GLOBAL_NAMES.contains(name))
+            ary.push(name);
+    }
+
+    ary.sort();
+    return JSON.stringify(ary);
+}
+
 function isDefined(x) {
     return (typeof x != 'undefined');
 }
@@ -90,6 +109,18 @@ ScriptSchema = {
 };
 
 Script = {
+    load: function(file) {
+        var s = "";
+        var rdr = new java.io.BufferedReader(new java.io.FileReader(file));
+
+        var line = "";
+        while ((line = rdr.readLine()) != null) {
+            s += line + "\n";
+        }
+
+        rdr.close();
+        return eval(s);
+    },
 
     newFixedWidthFileSchema: function(obj) {
         if (!tv4.validate(obj, ScriptSchema.newFixedWidthFileSchema)) {
@@ -188,5 +219,3 @@ Script = {
         return b.build();
     }
 }
-
-$ = Script;

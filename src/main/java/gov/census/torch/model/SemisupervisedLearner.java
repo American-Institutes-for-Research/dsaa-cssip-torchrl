@@ -21,7 +21,7 @@ public class SemisupervisedLearner
         if (labeled.length < 2)
             throw new IllegalArgumentException("need at least two classes");
 
-        if (nMatchClasses >= labeled.length - 1)
+        if (nMatchClasses > labeled.length - 1)
             throw new IllegalArgumentException("need at least one nonmatch class");
 
         for (int j = 0; j < labeled.length; j++) {
