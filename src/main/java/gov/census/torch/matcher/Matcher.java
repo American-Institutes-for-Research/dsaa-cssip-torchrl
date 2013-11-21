@@ -2,6 +2,8 @@ package gov.census.torch.matcher;
 
 import gov.census.torch.IModel;
 import gov.census.torch.Record;
+import gov.census.torch.util.BucketMap;
+import gov.census.torch.util.ListBucket;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -28,8 +30,10 @@ public class Matcher {
     protected static TreeMap<Double, List<MatchRecord>>
         computeScores(IModel model, List<Record> list1, List<Record> list2) 
     {
-        TreeMap<Double, List<MatchRecord>> map = new TreeMap<>();
         Map<String, List<Record>> blocks = Record.block(list1);
+        BucketMap<Double, MatchRecord, List<MatchRecord>> bmap =
+            new BucketMap<>(new TreeMap<Double, List<MatchRecord>>(),
+                            new ListBucket<MatchRecord>());
 
         for (Record rec: list2) {
             String key = rec.blockingKey();
@@ -40,19 +44,12 @@ public class Matcher {
                 for (Record otherRec: blocks.get(key)) {
                     double score = model.matchScore(rec, otherRec);
                     MatchRecord matchRec = new MatchRecord(rec, otherRec, score);
-
-                    if (map.containsKey(score)) {
-                        map.get(score).add(matchRec);
-                    } else {
-                        LinkedList<MatchRecord> list = new LinkedList<>();
-                        list.add(matchRec);
-                        map.put(score, list);
-                    }
+                    bmap.add(score, matchRec);
                 }
             }
         }
 
-        return map;
+        return (TreeMap<Double, List<MatchRecord>>)bmap.map();
     }
 
     /**
