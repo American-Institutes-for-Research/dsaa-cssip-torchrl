@@ -7,9 +7,9 @@ import gov.census.torch.util.BucketMap;
 
 import java.util.TreeMap;
 
-public class IncrementalTally {
+public class IncrementalCounter {
 
-    public IncrementalTally(RecordComparator cmp) {
+    public IncrementalCounter(RecordComparator cmp) {
         _cmp = cmp;
         _acc = new BucketMap<>(new TreeMap<Integer, Integer>(),
                                IntBucket.INSTANCE);
@@ -21,11 +21,11 @@ public class IncrementalTally {
     }
 
     /**
-     * Returns a new <code>Tally</code> representing the current state of the
-     * <code>IncrementalTally</code>.
+     * Returns a new <code>Counter</code> representing the current state of the
+     * <code>IncrementalCounter</code>.
      */
-    public Tally tally() {
-        return new Tally(_cmp, (TreeMap<Integer, Integer>)_acc.map());
+    public Counter toCounter() {
+        return new Counter(_cmp, (TreeMap<Integer, Integer>)_acc.map());
     }
 
     private final RecordComparator _cmp;

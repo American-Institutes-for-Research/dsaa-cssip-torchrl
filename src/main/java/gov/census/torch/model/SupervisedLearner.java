@@ -1,30 +1,30 @@
 package gov.census.torch.model;
 
 import gov.census.torch.RecordComparator;
-import gov.census.torch.counter.Tally;
+import gov.census.torch.counter.Counter;
 
 import java.util.Random;
 
 public class SupervisedLearner
 {
-    public SupervisedLearner(Random rng, Tally[] tallies, int nMatchClasses)
+    public SupervisedLearner(Random rng, Counter[] counters, int nMatchClasses)
     {
-        if (tallies.length < 2)
+        if (counters.length < 2)
             throw new IllegalArgumentException("need at least two classes");
 
-        if (nMatchClasses > tallies.length - 1)
+        if (nMatchClasses > counters.length - 1)
             throw new IllegalArgumentException("need at least one nonmatch class");
 
-        for (int j = 1; j < tallies.length; j++) {
-            if (tallies[0].recordComparator() != tallies[j].recordComparator())
+        for (int j = 1; j < counters.length; j++) {
+            if (counters[0].recordComparator() != counters[j].recordComparator())
                 throw new IllegalArgumentException(
-                        "all tallies should have the same record comparator");
+                        "all counters should have the same record comparator");
 
         }
 
-        _nClasses = tallies.length;
+        _nClasses = counters.length;
         _nMatchClasses = nMatchClasses;
-        _cmp = tallies[0].recordComparator();
+        _cmp = counters[0].recordComparator();
         _mWeights = new double[_nClasses][_cmp.nComparators()][];
         _logMWeights = new double[_nClasses][_cmp.nComparators()][];
         for (int j = 0; j < _nClasses; j++) {
@@ -34,12 +34,12 @@ public class SupervisedLearner
             }
         }
 
-        estimate(rng, tallies);
+        estimate(rng, counters);
         _model = new MixtureModel(_cmp, _mWeights, _nMatchClasses);
     }
 
-    public SupervisedLearner(Tally[] tallies, int nMatchClasses) {
-        this(new Random(), tallies, nMatchClasses);
+    public SupervisedLearner(Counter[] counters, int nMatchClasses) {
+        this(new Random(), counters, nMatchClasses);
     }
 
     public MixtureModel model() {
@@ -49,11 +49,11 @@ public class SupervisedLearner
     /**
      * Compute the ML estimate for the labeled data.
      */
-    private void estimate(Random rng, Tally[] tallies) {
+    private void estimate(Random rng, Counter[] counters) {
         for (int j = 0; j < _nClasses; j++) {
             double classTotal = 0.0;
-            int[] counts = tallies[j].nonzeroCounts();
-            int[][] patterns = tallies[j].nonzeroPatterns();
+            int[] counts = counters[j].nonzeroCounts();
+            int[][] patterns = counters[j].nonzeroPatterns();
 
             for (int i = 0; i < patterns.length; i++) {
                 classTotal += counts[i];
