@@ -3,6 +3,7 @@ package gov.census.torch.model;
 import gov.census.torch.IModel;
 import gov.census.torch.Record;
 import gov.census.torch.RecordComparator;
+import gov.census.torch.counter.Counter;
 
 /**
  * An object that represents a multinomial mixture model under the conditional independence (CI)
@@ -12,6 +13,41 @@ import gov.census.torch.RecordComparator;
 public class MixtureModel
     implements IModel
 {
+
+    /**
+     * Uses unsupervised learning to fit a two-class mixture model to unlabeled data. A mixture
+     * model with two classes is fit, and the class with the lower class weight is declared to
+     * be the match class.
+     */
+    public static MixtureModel fit(Counter counter) {
+        UnsupervisedLearner lr = new UnsupervisedLearner(counter, 2);
+        double[] classWeights = lr.classWeights();
+        if (classWeights[0] < classWeights[1])
+            lr.setMatchClass(0, true);
+        else
+            lr.setMatchClass(1, true);
+
+        return lr.model();
+    }
+
+    /**
+     * Uses supervised learning to fit a mixture model to labeled data.
+     */
+    public static MixtureModel fit(Counter[] counter, int nMatchClasses)
+    {
+        return new SupervisedLearner(counter, nMatchClasses).model();
+    }
+
+    /**
+     * Uses semisuvervised learning to fit a mixture model to a mix of labeled and unlabeled
+     * data.
+     */
+    public static MixtureModel fit(Counter unlabeled, Counter[] labeled, 
+                                   int nMatchClasses, double lambda)
+    {
+        return new SemisupervisedLearner(unlabeled, labeled, nMatchClasses, lambda).model();
+    }
+
     public MixtureModel(RecordComparator comparator, double[][][] mWeights, int nMatchClasses) {
         _cmp = comparator;
         _mWeights = mWeights;
