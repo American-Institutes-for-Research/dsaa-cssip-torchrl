@@ -2,8 +2,8 @@ package gov.census.torch.counter;
 
 import gov.census.torch.Record;
 import gov.census.torch.RecordComparator;
-import gov.census.torch.util.IntegerAccumulator;
-import gov.census.torch.util.MapAccumulator;
+import gov.census.torch.util.IntBucket;
+import gov.census.torch.util.BucketMap;
 
 import java.util.TreeMap;
 
@@ -11,8 +11,8 @@ public class IncrementalTally {
 
     public IncrementalTally(RecordComparator cmp) {
         _cmp = cmp;
-        _acc = new MapAccumulator<>(new TreeMap<Integer, Integer>(),
-                                    IntegerAccumulator.INSTANCE);
+        _acc = new BucketMap<>(new TreeMap<Integer, Integer>(),
+                               IntBucket.INSTANCE);
     } 
 
     public void add(Record rec1, Record rec2) {
@@ -29,5 +29,5 @@ public class IncrementalTally {
     }
 
     private final RecordComparator _cmp;
-    private final MapAccumulator<Integer, Integer, Integer> _acc;
+    private final BucketMap<Integer, Integer, Integer> _acc;
 }

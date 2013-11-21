@@ -1,7 +1,7 @@
 package gov.census.torch;
 
-import gov.census.torch.util.MapAccumulator;
-import gov.census.torch.util.ListAccumulator;
+import gov.census.torch.util.BucketMap;
+import gov.census.torch.util.ListBucket;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,9 +21,9 @@ public class Record {
      * <code>Record</code> with that blocking key.
      */
     public static Map<String, List<Record>> block(List<Record> list) {
-        MapAccumulator<String, Record, List<Record>> acc =
-            new MapAccumulator<>(new HashMap<String, List<Record>>(),
-                                 new ListAccumulator<Record>());
+        BucketMap<String, Record, List<Record>> acc =
+            new BucketMap<>(new HashMap<String, List<Record>>(),
+                            new ListBucket<Record>());
         for (Record rec: list)
             acc.add(rec.blockingKey(), rec);
 
