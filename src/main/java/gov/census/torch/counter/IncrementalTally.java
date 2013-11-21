@@ -2,24 +2,22 @@ package gov.census.torch.counter;
 
 import gov.census.torch.Record;
 import gov.census.torch.RecordComparator;
+import gov.census.torch.util.IntegerAccumulator;
+import gov.census.torch.util.MapAccumulator;
 
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class IncrementalTally {
 
     public IncrementalTally(RecordComparator cmp) {
         _cmp = cmp;
-        _countMap = new TreeMap<>();
+        _acc = new MapAccumulator<>(new TreeMap<Integer, Integer>(),
+                                    IntegerAccumulator.INSTANCE);
     } 
 
     public void add(Record rec1, Record rec2) {
         Integer pattern = _cmp.compareIndex(rec1, rec2);
-
-        if (_countMap.containsKey(pattern))
-            _countMap.put(pattern, _countMap.get(pattern) + 1);
-        else
-            _countMap.put(pattern, 1);
+        _acc.add(pattern, 1);
     }
 
     /**
@@ -27,9 +25,9 @@ public class IncrementalTally {
      * <code>IncrementalTally</code>.
      */
     public Tally tally() {
-        return new Tally(_cmp, _countMap);
+        return new Tally(_cmp, (TreeMap<Integer, Integer>)_acc.map());
     }
 
     private final RecordComparator _cmp;
-    private final SortedMap<Integer, Integer> _countMap;
+    private final MapAccumulator<Integer, Integer, Integer> _acc;
 }

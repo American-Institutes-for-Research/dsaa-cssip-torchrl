@@ -1,9 +1,13 @@
 package gov.census.torch;
 
+import gov.census.torch.util.MapAccumulator;
+import gov.census.torch.util.ListAccumulator;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A Record consists of several Fields, a blocking key, and, optionally, an id.
@@ -16,21 +20,14 @@ public class Record {
      * @return a <code>HashMap</code> that associates blocking keys to the list of
      * <code>Record</code> with that blocking key.
      */
-    public static HashMap<String, List<Record>> block(List<Record> list) {
-        HashMap<String, List<Record>> blocks = new HashMap<>();
-        for (Record rec: list) {
-            String key = rec.blockingKey();
+    public static Map<String, List<Record>> block(List<Record> list) {
+        MapAccumulator<String, Record, List<Record>> acc =
+            new MapAccumulator<>(new HashMap<String, List<Record>>(),
+                                 new ListAccumulator<Record>());
+        for (Record rec: list)
+            acc.add(rec.blockingKey(), rec);
 
-            if (blocks.containsKey(key)) {
-                blocks.get(key).add(rec);
-            } else {
-                LinkedList<Record> ll = new LinkedList<>();
-                ll.add(rec);
-                blocks.put(key, ll);
-            }
-        }
-
-        return blocks;
+        return acc.map();
     }
 
     /**

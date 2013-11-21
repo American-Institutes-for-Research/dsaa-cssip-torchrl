@@ -10,7 +10,7 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 import com.googlecode.jcsv.CSVStrategy;
@@ -29,7 +29,7 @@ public class Matcher {
         computeScores(IModel model, List<Record> list1, List<Record> list2) 
     {
         TreeMap<Double, List<MatchRecord>> map = new TreeMap<>();
-        HashMap<String, List<Record>> blocks = Record.block(list1);
+        Map<String, List<Record>> blocks = Record.block(list1);
 
         for (Record rec: list2) {
             String key = rec.blockingKey();

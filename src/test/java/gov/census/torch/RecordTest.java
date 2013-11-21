@@ -1,6 +1,6 @@
 package gov.census.torch;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,7 +36,7 @@ public class RecordTest {
 
     @Test
     public void testBlocking() {
-        HashMap<String, List<Record>> blocks = Record.block(list);
+        Map<String, List<Record>> blocks = Record.block(list);
         assertThat(blocks.size(), is(2));
         assertThat(blocks.get("asdf").size(), is(3));
         assertThat(blocks.get("qwer").size(), is(2));

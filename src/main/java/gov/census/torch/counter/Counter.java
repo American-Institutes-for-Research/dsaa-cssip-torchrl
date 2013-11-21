@@ -4,8 +4,8 @@ import gov.census.torch.Record;
 import gov.census.torch.RecordComparator;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -20,7 +20,7 @@ public class Counter {
     {
 
         IncrementalTally inc = new IncrementalTally(cmp);
-        HashMap<String, List<Record>> blocks = Record.block(list1);
+        Map<String, List<Record>> blocks = Record.block(list1);
 
         for (Record rec: list2) {
             String key = rec.blockingKey();
@@ -53,7 +53,7 @@ public class Counter {
                 throw new IllegalArgumentException("Records must have ID fields");
         }
 
-        HashMap<String, List<Record>> blocks = Record.block(list1);
+        Map<String, List<Record>> blocks = Record.block(list1);
 
         for (Record rec: list2) {
             String key = rec.blockingKey();

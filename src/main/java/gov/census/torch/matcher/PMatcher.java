@@ -3,7 +3,7 @@ package gov.census.torch.matcher;
 import gov.census.torch.IModel;
 import gov.census.torch.Record;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
@@ -30,7 +30,7 @@ public class PMatcher {
         throws InterruptedException, ExecutionException
     {
         TreeMap<Double, List<MatchRecord>> map = new TreeMap<>();
-        HashMap<String, List<Record>> blocks = Record.block(list1);
+        Map<String, List<Record>> blocks = Record.block(list1);
 
         List<LinkedList<Record>> records = new java.util.ArrayList<>();
         for (int i = 0; i < N_THREADS; i++)
@@ -60,7 +60,7 @@ public class PMatcher {
             implements Callable<TreeMap<Double, List<MatchRecord>>>
     {
         public MatchTask(IModel model,
-                         HashMap<String, List<Record>> blocks,
+                         Map<String, List<Record>> blocks,
                          List<Record> list) 
         {
             _model = model;
@@ -96,7 +96,7 @@ public class PMatcher {
         }
         
         private final IModel _model;
-        private final HashMap<String, List<Record>> _blocks;
+        private final Map<String, List<Record>> _blocks;
         private final List<Record> _list;
     }
 
