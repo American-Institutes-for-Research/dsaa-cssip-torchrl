@@ -14,7 +14,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.ForkJoinPool;
 
 import com.googlecode.jcsv.CSVStrategy;
 import com.googlecode.jcsv.writer.CSVWriter;
@@ -30,12 +29,10 @@ public class Matcher {
         return new Matcher(model, map);
     }
 
-    public static Matcher pmatch(IModel model, List<Record> list1, List<Record> list2)
+    public static Matcher pmatch(int workThreshold, IModel model, List<Record> list1, List<Record> list2)
     {
-        ForkJoinPool pool = new ForkJoinPool();
-        MatchAction action = new MatchAction(model, list1, list2);
-        pool.invoke(action);
-        return new Matcher(model, action.result());
+        PMatcher pm = new PMatcher(workThreshold, model, list1, list2);
+        return new Matcher(model, pm.scores());
     }
 
     public Matcher(IModel model, TreeMap<Double, List<MatchRecord>> map) {
