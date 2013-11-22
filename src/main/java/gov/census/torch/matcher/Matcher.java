@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ForkJoinPool;
 
 import com.googlecode.jcsv.CSVStrategy;
 import com.googlecode.jcsv.writer.CSVWriter;
@@ -21,9 +22,25 @@ import com.googlecode.jcsv.writer.internal.CSVWriterBuilder;
 
 public class Matcher {
 
-    public Matcher(IModel model, List<Record> list1, List<Record> list2) {
+    public static Matcher match(IModel model, List<Record> list1, List<Record> list2) 
+    {
+        TreeMap<Double, List<MatchRecord>> map = 
+            Matcher.computeScores(model, list1, list2);
+
+        return new Matcher(model, map);
+    }
+
+    public static Matcher pmatch(IModel model, List<Record> list1, List<Record> list2)
+    {
+        ForkJoinPool pool = new ForkJoinPool();
+        MatchAction action = new MatchAction(model, list1, list2);
+        pool.invoke(action);
+        return new Matcher(model, action.result());
+    }
+
+    public Matcher(IModel model, TreeMap<Double, List<MatchRecord>> map) {
         _model = model;
-        _map = Matcher.computeScores(model, list1, list2);
+        _map = map;
         _scores = _map.keySet().toArray(new Double[0]);
     }
 
@@ -31,11 +48,17 @@ public class Matcher {
         computeScores(IModel model, List<Record> list1, List<Record> list2) 
     {
         Map<String, List<Record>> blocks = Record.block(list1);
+        return computeScores(model, blocks, list2);
+    }
+
+    protected static TreeMap<Double, List<MatchRecord>> 
+        computeScores(IModel model, Map<String, List<Record>> blocks, List<Record> list) 
+    {
         BucketMap<Double, MatchRecord, List<MatchRecord>> bmap =
             new BucketMap<>(new TreeMap<Double, List<MatchRecord>>(),
                             new ListBucket<MatchRecord>());
 
-        for (Record rec: list2) {
+        for (Record rec: list) {
             String key = rec.blockingKey();
 
             if (!blocks.containsKey(key)) {
