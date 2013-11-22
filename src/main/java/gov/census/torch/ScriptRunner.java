@@ -35,16 +35,22 @@ public class ScriptRunner {
         try {
             InputStreamReader reader = 
                 new InputStreamReader(tv4.openStream());
+            engine.put(ScriptEngine.FILENAME, tv4.toString());
             engine.eval(reader);
 
             reader = 
                 new InputStreamReader(baseScript.openStream());
+            engine.put(ScriptEngine.FILENAME, baseScript.toString());
             engine.eval(reader);
 
-            if (args.length > 0)
+            if (args.length > 0) {
+                engine.put(ScriptEngine.FILENAME, args[0]);
                 engine.eval(new FileReader(args[0]));
-            else
+            }
+            else {
+                engine.put(ScriptEngine.FILENAME, "User Input");
                 repl(engine);
+            }
         }
         catch(IOException ioe) {
             System.err.println("There was a problem reading the script file");

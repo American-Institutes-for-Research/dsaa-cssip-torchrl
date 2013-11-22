@@ -20,7 +20,7 @@ public class PMatcher {
         _model = model;
         _blocks = Record.block(list1);
         _records = list2.toArray(new Record[0]);
-        _acc = new ConcurrentLinkedQueue<MatchRecord>();
+        _queue = new ConcurrentLinkedQueue<MatchRecord>();
     }
 
     public TreeMap<Double, List<MatchRecord>> scores() {
@@ -33,7 +33,7 @@ public class PMatcher {
 
         MatchRecord matchRec;
         while (!action.isDone()) {
-            if ((matchRec = _acc.poll()) != null) {
+            if ((matchRec = _queue.poll()) != null) {
                 bmap.add(matchRec.score(), matchRec);
             }
         }
@@ -60,7 +60,7 @@ public class PMatcher {
                     } else {
                         for (Record otherRec: _blocks.get(key)) {
                             double score = _model.matchScore(rec, otherRec);
-                            _acc.add(new MatchRecord(rec, otherRec, score));
+                            _queue.add(new MatchRecord(rec, otherRec, score));
                         }
                     }
                 }
@@ -80,5 +80,5 @@ public class PMatcher {
     private final IModel _model;
     private final Map<String, List<Record>> _blocks;
     private final Record[] _records;
-    private final ConcurrentLinkedQueue<MatchRecord> _acc;
+    private final ConcurrentLinkedQueue<MatchRecord> _queue;
 }
