@@ -78,8 +78,10 @@ public class ScriptRunner {
         while ((line = reader.readLine()) != null) {
             try {
                 Object result = engine.eval(line);
-                writer.println(result);
-                writer.flush();
+                if (result != null) {
+                    writer.println(result);
+                    writer.flush();
+                }
             }
             catch(ScriptException e) {
                 writer.println(e);

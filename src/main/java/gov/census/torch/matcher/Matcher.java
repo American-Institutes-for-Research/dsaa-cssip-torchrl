@@ -73,30 +73,50 @@ public class Matcher {
     }
 
     /**
+     * Write pairs of records with a match score between the given values.
+     */
+    public void printPairs(Writer writer, double lo, double hi) 
+        throws IOException
+    {
+        // Create a list of matches from highest score to lowest
+        int loIndex = Arrays.binarySearch(_scores, lo);
+        if (loIndex == _scores.length)
+            return;
+        else if (loIndex < 0)
+            loIndex = -(loIndex + 1);
+
+        int hiIndex = Arrays.binarySearch(_scores, hi);
+        if (hiIndex == 0)
+            return;
+        else if (hiIndex < 0)
+            hiIndex = -(hiIndex + 1);
+
+        LinkedList<MatchRecord> list = new LinkedList<>();
+        for (int i = hiIndex - 1; i >= loIndex; i--)
+            list.addAll(_map.get(_scores[i]));
+
+        printMatchRecords(writer, list);
+    }
+
+    public void printPairs(String name, double lo, double hi)
+        throws IOException
+    {
+        printPairs(new FileWriter(name), lo, hi);
+    }
+
+    public void printPairs(double lo, double hi)
+        throws IOException
+    {
+        printPairs(new OutputStreamWriter(System.out), lo, hi);
+    }
+
+    /**
      * Write matches in CSV format.
      */
     public void printMatches(Writer writer, double cutoff)
         throws IOException
     {
-        // Create a list of matches from highest score to lowest
-        int leftIndex = Arrays.binarySearch(_scores, cutoff);
-        if (leftIndex == _scores.length)
-            return;
-        else if (leftIndex < 0)
-            leftIndex = -(leftIndex + 1);
-
-        LinkedList<MatchRecord> list = new LinkedList<>();
-        for (int i = _scores.length - 1; i >= leftIndex; i--)
-            list.addAll(_map.get(_scores[i]));
-
-        CSVWriter<MatchRecord> csvWriter =
-            new CSVWriterBuilder<MatchRecord>(writer)
-            .entryConverter(new MatchRecordEntryConverter(_model.recordComparator()))
-            .strategy(CSVStrategy.UK_DEFAULT)
-            .build();
-
-        csvWriter.writeAll(list);
-        writer.flush();
+        printPairs(writer, cutoff, Double.MAX_VALUE);
     }
 
     /**
@@ -118,32 +138,49 @@ public class Matcher {
     }
 
     /**
-     * Print pairs with match scores immediately above and below the given point.
+     * Write pairs of records with a match score below the low value or above the high value.
      */
-    public void browse(double score) 
+    public void printTails(Writer writer, double lo, double hi) 
         throws IOException
     {
+        // Create a list of matches from highest score to lowest
+        int loIndex = Arrays.binarySearch(_scores, lo);
+        if (loIndex < 0)
+            loIndex = -(loIndex + 1);
+
+        int hiIndex = Arrays.binarySearch(_scores, hi);
+        if (hiIndex < 0)
+            hiIndex = -(hiIndex + 1);
+
+        if (loIndex == 0 && hiIndex == _scores.length)
+            return;
+
         LinkedList<MatchRecord> list = new LinkedList<>();
+        for (int i = 0; i < loIndex; i++)
+            list.addAll(_map.get(_scores[i]));
+        for (int i = hiIndex; i < _scores.length; i++)
+            list.addAll(_map.get(_scores[i]));
 
-        Double higher = _map.higherKey(score);
-        if (higher != null)
-            list.addAll(_map.get(higher));
-
-        if (_map.containsKey(score))
-            list.addAll(_map.get(score));
-        
-        Double lower = _map.lowerKey(score);
-        if (lower != null)
-            list.addAll(_map.get(lower));
-
-        printMatchRecords(list);
+        printMatchRecords(writer, list);
     }
 
-    protected void printMatchRecords(List<MatchRecord> list) 
+    public void printTails(String name, double lo, double hi)
+        throws IOException
+    {
+        printTails(new FileWriter(name), lo, hi);
+    }
+
+    public void printtails(double lo, double hi)
+        throws IOException
+    {
+        printTails(new OutputStreamWriter(System.out), lo, hi);
+    }
+
+    protected void printMatchRecords(Writer writer, List<MatchRecord> list) 
         throws IOException
     {
         CSVWriter<MatchRecord> csvWriter =
-            new CSVWriterBuilder<MatchRecord>(new OutputStreamWriter(System.out))
+            new CSVWriterBuilder<MatchRecord>(writer)
             .entryConverter(new MatchRecordEntryConverter(_model.recordComparator()))
             .strategy(CSVStrategy.UK_DEFAULT)
             .build();
