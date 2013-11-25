@@ -163,11 +163,13 @@ public class Matcher {
             unit = "seconds";
         }
 
-        if (d > 0) {
-            System.out.format("Compared %,d records in %.2f %s%n", nComparisons, d, unit);
-        } else {
-            System.out.format("Compared %,d records in %d %s%n", nComparisons, elapsedTime, unit);
-        }
+        StringBuilder b = new StringBuilder();
+        b.append(String.format("Performed %,d comparisons in", nComparisons));
+        b.append(d > 0 ? String.format(" %.2f ", d) : 
+                         String.format(" %d ", nComparisons));
+        b.append(unit).append("\n");
+
+        System.out.println(b.toString());
     }
 
     protected void printMatchRecords(Writer writer, List<MatchRecord> list) 
