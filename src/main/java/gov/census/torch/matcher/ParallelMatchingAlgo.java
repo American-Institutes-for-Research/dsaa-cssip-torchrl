@@ -12,18 +12,32 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-public class PMatcher {
+public class ParallelMatchingAlgo 
+    implements IMatchingAlgorithm
+{
 
-    public PMatcher(int workThreshold, IModel model, List<Record> list1, List<Record> list2) 
+    public ParallelMatchingAlgo(IModel model, int workThreshold) 
     {
         _workThreshold = workThreshold;
         _model = model;
-        _blocks = Record.block(list1);
-        _records = list2.toArray(new Record[0]);
         _queue = new ConcurrentLinkedQueue<MatchRecord>();
     }
 
-    public TreeMap<Double, List<MatchRecord>> scores() {
+    @Override
+    public TreeMap<Double, List<MatchRecord>>
+        computeScores(List<Record> list1, List<Record> list2)
+    {
+        return computeScores(Record.block(list1), list2);
+    }
+
+    public TreeMap<Double, List<MatchRecord>> 
+        computeScores(Map<String, List<Record>> blocks, List<Record> list) 
+    {
+        _startTime = System.currentTimeMillis();
+        _nComparisons = 0;
+        _blocks = blocks;
+        _records = list.toArray(new Record[0]);
+
         BucketMap<Double, MatchRecord, List<MatchRecord>> bmap =
             new BucketMap<>(new TreeMap<Double, List<MatchRecord>>(),
                             new ListBucket<MatchRecord>());
@@ -35,10 +49,28 @@ public class PMatcher {
         while (!action.isDone()) {
             if ((matchRec = _queue.poll()) != null) {
                 bmap.add(matchRec.score(), matchRec);
+                _nComparisons++;
             }
         }
+        
+        // make sure the queue is empty
+        for (MatchRecord mrec: _queue) {
+            bmap.add(mrec.score(), mrec);
+            _nComparisons++;
+        }
 
+        _endTime = System.currentTimeMillis();
         return (TreeMap<Double, List<MatchRecord>>)bmap.map();
+    }
+
+    @Override
+    public int nComparisons() {
+        return _nComparisons;
+    }
+
+    @Override
+    public long elapsedTime() {
+        return _endTime - _startTime;
     }
 
     private class MatchAction extends RecursiveAction
@@ -78,7 +110,9 @@ public class PMatcher {
 
     private final int _workThreshold;
     private final IModel _model;
-    private final Map<String, List<Record>> _blocks;
-    private final Record[] _records;
     private final ConcurrentLinkedQueue<MatchRecord> _queue;
+    private Map<String, List<Record>> _blocks;
+    private Record[] _records;
+    private long _startTime, _endTime;
+    private int _nComparisons;
 }
