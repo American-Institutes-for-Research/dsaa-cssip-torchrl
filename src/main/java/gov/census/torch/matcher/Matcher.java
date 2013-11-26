@@ -59,6 +59,76 @@ public class Matcher {
         _model = model;
         _map = map;
         _scores = _map.keySet().toArray(new Double[0]);
+        _totalScores = new int[_scores.length];
+        _cumTotalScores = new int[_scores.length];
+
+        if (_scores.length > 0) {
+            _totalScores[0] = _map.get(_scores[0]).size();
+            _cumTotalScores[0] = _totalScores[0];
+        }
+
+        if (_scores.length > 1) {
+            for (int i = 1; i < _scores.length; i++) {
+                _totalScores[i] = _map.get(_scores[i]).size();
+                _cumTotalScores[i] = _cumTotalScores[i - 1] + _totalScores[i];
+            }
+        }
+
+        _grandTotalScores = (_scores.length > 0) ? 
+                            _cumTotalScores[_cumTotalScores.length - 1] : 0;
+    }
+
+    /**
+     * Computes the score quartiles. Computes the quantiles at 0, 0.25, 0.5, 0.72, and 1.
+     */
+    public double[] quartiles() {
+        return quantiles(0, 0.25, 0.5, 0.75, 1.0);
+    }
+
+    /**
+     * Compute the given quantiles.
+     */
+    public double[] quantiles(double... probs) {
+        for (int i = 0; i < probs.length; i++) {
+            if (probs[i] < 0 || probs[i] > 1)
+                throw new IllegalArgumentException("quantile probabilites should be between 0 and 1");
+        }
+
+        int np = probs.length;
+        double[] qs = new double[np];
+
+        if (np == 0) {
+            return qs;
+        }
+
+        if (_grandTotalScores == 0) {
+            Arrays.fill(qs, Double.NaN);
+            return qs;
+        }
+
+        for (int i = 0; i < np; i++) {
+            double index = (_grandTotalScores - 1) * probs[i];
+            double lo = Math.floor(index);
+            int m = Arrays.binarySearch(_cumTotalScores, (int)lo);
+
+            if (m < 0)
+                m = -(m + 1);
+
+            qs[i] = _scores[m];
+
+            if (index > lo) {
+                double hi = Math.ceil(index);
+                double h = index - lo;
+                m = Arrays.binarySearch(_cumTotalScores, (int)hi);
+
+                if (m < 0)
+                    m = -(m + 1);
+                
+                qs[i] = (1 - h) * qs[i] + h * _scores[m];
+            }
+        }
+
+        return qs;
     }
 
     /**
@@ -233,4 +303,6 @@ public class Matcher {
     private final IModel _model;
     private final TreeMap<Double, List<MatchRecord>> _map;
     private final Double[] _scores;
+    private final int _grandTotalScores;
+    private final int[] _totalScores, _cumTotalScores;
 }
