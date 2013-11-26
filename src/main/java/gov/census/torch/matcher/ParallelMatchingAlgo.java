@@ -12,10 +12,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
+/**
+ * A parallel matching algorithm.
+ */
 public class ParallelMatchingAlgo 
     implements IMatchingAlgorithm
 {
 
+    /**
+     * Constructs a matching algorithm that will compare records using the given <code>model</code>.
+     *
+     * @param workThreshold The maximum number of records that will be worked on by a single thread.
+     */
     public ParallelMatchingAlgo(IModel model, int workThreshold) 
     {
         _workThreshold = workThreshold;
@@ -23,6 +31,12 @@ public class ParallelMatchingAlgo
         _queue = new ConcurrentLinkedQueue<MatchRecord>();
     }
 
+    /**
+     * Computes match scores for the two lists. First <code>list1</code> is blocked, then each
+     * record in <code>list2</code> is compared to all records in the corresponding block. During
+     * the comparison stage, <code>list2</code> is split into chunks of size no greater than
+     * <code>workThreshold</code> (an argument to the constructor).
+     */
     @Override
     public TreeMap<Double, List<MatchRecord>>
         computeScores(List<Record> list1, List<Record> list2)
@@ -53,7 +67,7 @@ public class ParallelMatchingAlgo
             }
         }
         
-        // make sure the queue is empty
+        // clear out any stragglers
         for (MatchRecord mrec: _queue) {
             bmap.add(mrec.score(), mrec);
             _nComparisons++;

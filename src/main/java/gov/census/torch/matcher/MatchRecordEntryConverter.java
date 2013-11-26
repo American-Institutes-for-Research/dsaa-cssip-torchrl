@@ -4,6 +4,10 @@ import gov.census.torch.RecordComparator;
 
 import com.googlecode.jcsv.writer.CSVEntryConverter;
 
+/**
+ * An implementation of <code>CSVEntryConverter</code> which is used to output
+ * <code>MatchRecord</code>s in CSV format.
+ */
 public class MatchRecordEntryConverter 
     implements CSVEntryConverter<MatchRecord>
 {

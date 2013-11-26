@@ -2,6 +2,9 @@ package gov.census.torch.matcher;
 
 import gov.census.torch.Record;
 
+/**
+ * A container class to store two records and their corresponding match score.
+ */
 public class MatchRecord {
     public MatchRecord(Record rec1, Record rec2, double score) {
         _rec1 = rec1;

@@ -9,14 +9,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * The standard scoring algoirthm.
+ */
 public class DefaultMatchingAlgo 
     implements IMatchingAlgorithm
 {
 
+    /**
+     * Constructs a matching algorithm that will compare records using the given <code>model</code>.
+     */
     public DefaultMatchingAlgo(IModel model) {
         _model = model;
     }
 
+    /**
+     * Computes match scores for the two lists. First <code>list1</code> is blocked, then each
+     * record in <code>list2</code> is compared to all records in the corresponding block.
+     */
     @Override
     public TreeMap<Double, List<MatchRecord>>
         computeScores(List<Record> list1, List<Record> list2)

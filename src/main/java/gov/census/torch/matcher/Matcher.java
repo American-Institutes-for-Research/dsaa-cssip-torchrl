@@ -16,8 +16,15 @@ import com.googlecode.jcsv.CSVStrategy;
 import com.googlecode.jcsv.writer.CSVWriter;
 import com.googlecode.jcsv.writer.internal.CSVWriterBuilder;
 
+/**
+ * A class respresenting the output of a matching algorithm. Use this class to browse results by
+ * viewing records pairs with scores above or below given thresholds.
+ */
 public class Matcher {
 
+    /**
+     * Performs matching on the given lists using a single-threaded algorithm.
+     */
     public static Matcher match(IModel model, List<Record> list1, List<Record> list2) 
     {
         DefaultMatchingAlgo algo = new DefaultMatchingAlgo(model);
@@ -27,6 +34,13 @@ public class Matcher {
         return new Matcher(model, map);
     }
 
+    /**
+     * Performs matching on the given lists using a multi-threaded parallel algorithm. Individual
+     * threads will work on chunks of <code>list2</code>.
+     *
+     * @param workThreshold The maximum number of records (in <code>list2</code>) that are given to
+     * a single thread.
+     */
     public static Matcher pmatch(IModel model, int workThreshold, List<Record> list1, List<Record> list2)
     {
         ParallelMatchingAlgo algo = new ParallelMatchingAlgo(model, workThreshold);
@@ -36,6 +50,11 @@ public class Matcher {
         return new Matcher(model, map);
     }
 
+    /**
+     * Constructs a new <code>Matcher</code>.
+     *
+     * @param map A map from match-scores to the list of record pairs with that score.
+     */
     public Matcher(IModel model, TreeMap<Double, List<MatchRecord>> map) {
         _model = model;
         _map = map;
@@ -43,7 +62,7 @@ public class Matcher {
     }
 
     /**
-     * Write pairs of records with a match score between the given values.
+     * Writes pairs of records with a match score between the given values.
      */
     public void printPairs(Writer writer, double lo, double hi) 
         throws IOException
@@ -68,12 +87,20 @@ public class Matcher {
         printMatchRecords(writer, list);
     }
 
+    /**
+     * Writes pairs of records with a match score between the given values to a file.
+     *
+     * @param name The name of the file to write to
+     */
     public void printPairs(String name, double lo, double hi)
         throws IOException
     {
         printPairs(new FileWriter(name), lo, hi);
     }
 
+    /**
+     * Writes pairs of records with a match score between the given values to stdout.
+     */
     public void printPairs(double lo, double hi)
         throws IOException
     {
@@ -81,16 +108,18 @@ public class Matcher {
     }
 
     /**
-     * Write matches in CSV format.
+     * Writes pairs of records with a match score above the given threshold.
      */
     public void printMatches(Writer writer, double cutoff)
         throws IOException
     {
-        printPairs(writer, cutoff, Double.MAX_VALUE);
+        printPairs(writer, cutoff, Double.POSITIVE_INFINITY);
     }
 
     /**
-     * Write matches in CSV format to the file with the given name.
+     * Writes pairs of records with a match score above the given threshold to a file.
+     *
+     * @param name The name of the file to write to
      */
     public void printMatches(String name, double cutoff) 
         throws IOException
@@ -99,7 +128,7 @@ public class Matcher {
     }
 
     /**
-     * Write matches in CSV format to STDOUT
+     * Writes paris of records with a match score above the given threshold to stdout.
      */
     public void printMatches(double cutoff) 
         throws IOException
@@ -108,7 +137,7 @@ public class Matcher {
     }
 
     /**
-     * Write pairs of records with a match score below the low value or above the high value.
+     * Writes pairs of records with a match score below the low value or above the high value.
      */
     public void printTails(Writer writer, double lo, double hi) 
         throws IOException
@@ -134,44 +163,60 @@ public class Matcher {
         printMatchRecords(writer, list);
     }
 
+    /**
+     * Writes pairs of records with a match score below the low value or above the high value to a
+     * file.
+     *
+     * @param name The name of the file to write to
+     */
     public void printTails(String name, double lo, double hi)
         throws IOException
     {
         printTails(new FileWriter(name), lo, hi);
     }
 
+    /**
+     * Writes pairs of records with a match score below the low value or above the high value to
+     * stdout.
+     */
     public void printTails(double lo, double hi)
         throws IOException
     {
         printTails(new OutputStreamWriter(System.out), lo, hi);
     }
 
+    /**
+     * Writes the number of records compared by <code>algo</code> and the elapsed time to stdout.
+     */
     protected static void printMatchingAlgoFinished(IMatchingAlgorithm algo) {
         int nComparisons = algo.nComparisons();
         long elapsedTime = algo.elapsedTime();
-        double d = -1.0;
+        double dComparisons = -1.0;
         String unit = "milliseconds";
 
         if (elapsedTime > 3600000) {
-            d = elapsedTime / 3600000.0; 
+            dComparisons = elapsedTime / 3600000.0; 
             unit = "hours";
         } else if (elapsedTime > 60000) {
-            d = elapsedTime / 60000.0;
+            dComparisons = elapsedTime / 60000.0;
             unit = "minutes";
         } else if (elapsedTime > 1000) {
-            d = elapsedTime / 1000.0;
+            dComparisons = elapsedTime / 1000.0;
             unit = "seconds";
         }
 
         StringBuilder b = new StringBuilder();
         b.append(String.format("Performed %,d comparisons in", nComparisons));
-        b.append(d > 0 ? String.format(" %.2f ", d) : 
-                         String.format(" %d ", nComparisons));
+        b.append(dComparisons > 0 ? String.format(" %.2f ", dComparisons) : 
+                                    String.format(" %d ", nComparisons));
         b.append(unit).append("\n");
 
         System.out.println(b.toString());
     }
 
+    /**
+     * Writes a list of records in CSV format.
+     */
     protected void printMatchRecords(Writer writer, List<MatchRecord> list) 
         throws IOException
     {
