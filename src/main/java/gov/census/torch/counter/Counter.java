@@ -121,7 +121,7 @@ public class Counter {
     /**
      * Returns an array of patterns that were observed at least once. The number of times the
      * <code>i</code>th pattern was observed is given by the <code>i</code>th entry in {@link
-     * nonzeroCounts}.
+     * #nonzeroCounts}.
      */
     public int[][] nonzeroPatterns() {
         return _nonzeroPatterns;
