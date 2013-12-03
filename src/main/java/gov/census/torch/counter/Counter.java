@@ -83,11 +83,13 @@ public class Counter {
         _nonzeroPatternIndex = new int[_countMap.size()];
         int insertIndex = 0;
 
+        int total = 0;
         int maxCount = 0;
         for (Integer ix: _countMap.keySet()) {
             _nonzeroPatternIndex[insertIndex] = ix;
             int thisCount = _countMap.get(ix);
             _nonzeroCounts[insertIndex] = thisCount;
+            total += thisCount;
 
             if (thisCount > maxCount)
                 maxCount = thisCount;
@@ -99,6 +101,7 @@ public class Counter {
             insertIndex++;
         }
 
+        _total = total;
         _maxCount = maxCount;
     }
 
@@ -107,6 +110,13 @@ public class Counter {
      */
     public RecordComparator recordComparator() {
         return _cmp;
+    }
+
+    /**
+     * Returns the total number of individuals counted.
+     */
+    public int total() {
+        return _total;
     }
 
     /**
@@ -153,5 +163,5 @@ public class Counter {
     private final SortedMap<Integer, Integer> _countMap;
     private final int[] _nonzeroCounts, _nonzeroPatternIndex;
     private final int[][] _nonzeroPatterns;
-    private final int _maxCount;
+    private final int _maxCount, _total;
 }
