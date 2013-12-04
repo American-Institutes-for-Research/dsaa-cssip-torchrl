@@ -19,6 +19,34 @@ public class UnsupervisedBayes {
         // TODO there should be a test to ensure that the prior is compatible 
         // with the record comparator
         // TODO user should be able to specify burnin
+
+        // Naming scheme:
+        // _mWeights will store the posterior mean weights
+        // _mWeights2 will store the posterior mean square weights during
+        //   computation, and the sample variance after computation is finished
+        // _mWeightsStep will store a draw of weights during a single step
+        
+        int nClasses = _prior.nClasses();
+        int nComparators = _cmp.nComparators();
+        _mWeights = new double[nClasses][nComparators][];
+        _mWeights2 = new double[nClasses][nComparators][];
+        _mWeightsStep = new double[nClasses][nComparators][];
+        _logMWeights = new double[nClasses][nComparators][];
+
+        for (int j = 0; j < nClasses; j++) {
+            for (int k = 0; k < nComparators; k++) {
+                _mWeights[j][k] = new double[_cmp.nLevels(k)];
+                _mWeights2[j][k] = new double[_cmp.nLevels(k)];
+                _mWeightsStep[j][k] = new double[_cmp.nLevels(k)];
+                _logMWeights[j][k] = new double[_cmp.nLevels(k)];
+            }
+        }
+
+        _classWeights = new double[nClasses];
+        _classWeights2 = new double[nClasses];
+        _classWeightsStep = new double[nClasses];
+
+        _model = null;
     }
 
     /**
@@ -28,46 +56,40 @@ public class UnsupervisedBayes {
         int[] counts = counter.nonzeroCounts();
         int[][] patterns = counter.nonzeroPatterns();
 
-        double[][][] mWeights = new double[_prior.nClasses()][_cmp.nComparators()][];
-        double[] classWeights = new double[_prior.nClasses()];
         int[][] classAssign = new int[patterns.length][_prior.nClasses()];
-
-        for (int j = 0; j < _prior.nClasses(); j++)
-            for (int k = 0; k < _cmp.nComparators(); k++)
-                mWeights[j][k] = new double[_cmp.nLevels(k)];
+        double[][] classWeightsCond = new double[patterns.length][_prior.nClasses()];
 
         // draw initial match weights from the prior
-        drawWeights(rng, mWeights, classWeights, 
-                    _prior.multinomialWeightParameter(), _prior.classWeightParameter());
+        drawWeights(rng, _prior.multinomialWeightParameter(), _prior.classWeightParameter());
 
         // draw initial class assignments
-        drawClasses(rng, classAssign, counts, patterns, mWeights, classWeights);
+        drawClasses(rng, classAssign, classWeightsCond, counts, patterns);
 
         for (int n = 0; n < BURN_IN; n++) {
-            drawWeights(rng, mWeights, classWeights, counts, patterns, classAssign);
-            drawClasses(rng, classAssign, counts, patterns, mWeights, classWeights);
+            drawWeights(rng, counts, patterns, classAssign);
+            drawClasses(rng, classAssign, classWeightsCond, counts, patterns);
         }
     }
 
-    private void drawClasses(Random rng, int[][] classAssign,
-                             int[] counts, int[][] patterns,
-                             double[][][] mWeights, double[] classWeights)
+    private void drawClasses(Random rng, int[][] classAssign, double[][] classWeightsCond,
+                             int[] counts, int[][] patterns)
     {
         int nClasses = _prior.nClasses();
-        double[][] conditionalClassProbab = new double[patterns.length][nClasses];
 
         for (int i = 0; i < patterns.length; i++) {
             double classTotal = 0.0;
+
             for (int j = 0; j < _prior.nClasses(); j++) {
-                conditionalClassProbab[i][j] = classWeights[j];
+                classWeightsCond[i][j] = _classWeightsStep[j];
+
                 for (int k = 0; k < _cmp.nComparators(); k++) {
-                    conditionalClassProbab[i][j] *= mWeights[j][k][patterns[j][k]];
+                    classWeightsCond[i][j] *= _mWeightsStep[j][k][patterns[j][k]];
                 }
-                classTotal += conditionalClassProbab[i][j] ;
+                classTotal += classWeightsCond[i][j] ;
             }
 
             for (int j = 0; j < _prior.nClasses(); i++) {
-                conditionalClassProbab[i][j] /= classTotal;
+                classWeightsCond[i][j] /= classTotal;
             }
         }
 
@@ -75,7 +97,7 @@ public class UnsupervisedBayes {
             Arrays.fill(classAssign[i], 0);
 
             for (int n = 0; n < counts[i]; n++) {
-                int draw = Util.sampleMultinomial(rng, conditionalClassProbab[i]);
+                int draw = Util.sampleMultinomial(rng, classWeightsCond[i]);
                 classAssign[i][draw]++;
             }
         }
@@ -84,19 +106,18 @@ public class UnsupervisedBayes {
     /**
      * Draw match weights from a Dirichlet distribution with the given parameter.
      */
-    private void drawWeights(Random rng, double[][][] mWeights, double[] classWeights,
-                             double[][][] mParam, double[] classParam) 
+    private void drawWeights(Random rng, double[][][] mParam, double[] classParam) 
     {
 
         double[] newClassWeights = new Dirichlet(classParam).nextDistribution();
         for (int j = 0; j < _prior.nClasses(); j++)
-            classWeights[j] = newClassWeights[j];
+            _classWeightsStep[j] = newClassWeights[j];
 
         for (int j = 0; j < _prior.nClasses(); j++) {
             for (int k = 0; k < _cmp.nComparators(); k++) {
                 double[] newWeights = new Dirichlet(mParam[j][k]).nextDistribution();
                 for (int x = 0; x < _cmp.nLevels(k); x++)
-                    mWeights[j][k][x] = newWeights[x];
+                    _mWeightsStep[j][k][x] = newWeights[x];
             }
         }
     }
@@ -104,8 +125,7 @@ public class UnsupervisedBayes {
     /**
      * Compute posterior parameters and draw new weights.
      */
-    private void drawWeights(Random rng, double[][][] mWeights, double[] classWeights,
-                             int[] counts, int[][] patterns, int[][] classAssign) 
+    private void drawWeights(Random rng, int[] counts, int[][] patterns, int[][] classAssign) 
     {
         double[][][] mPrior = _prior.multinomialWeightParameter();
         double[] classPrior = _prior.classWeightParameter();
@@ -129,9 +149,13 @@ public class UnsupervisedBayes {
             }
         }
 
-        drawWeights(rng, mWeights, classWeights, mParam, classParam);
+        drawWeights(rng, mParam, classParam);
     }
 
     private final MixtureModelPrior _prior;
     private final RecordComparator _cmp;
+    private final double[][][] _mWeights, _mWeights2, _mWeightsStep;
+    private final double[][][] _logMWeights;
+    private final double[] _classWeights, _classWeights2, _classWeightsStep;
+    private final MixtureModel _model;
 }
