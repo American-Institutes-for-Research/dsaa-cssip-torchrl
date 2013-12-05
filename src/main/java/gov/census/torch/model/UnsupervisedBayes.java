@@ -29,13 +29,11 @@ public class UnsupervisedBayes {
         int nComparators = _cmp.nComparators();
         _mWeights = new double[nClasses][nComparators][];
         _mWeightsStep = new double[nClasses][nComparators][];
-        _logMWeights = new double[nClasses][nComparators][];
 
         for (int j = 0; j < nClasses; j++) {
             for (int k = 0; k < nComparators; k++) {
                 _mWeights[j][k] = new double[_cmp.nLevels(k)];
                 _mWeightsStep[j][k] = new double[_cmp.nLevels(k)];
-                _logMWeights[j][k] = new double[_cmp.nLevels(k)];
             }
         }
 
@@ -73,11 +71,6 @@ public class UnsupervisedBayes {
             drawClasses(rng, classAssign, classWeightsCond, counts, patterns);
             updateMeans(n);
         }
-
-        for (int j = 0; j < _mWeights.length; j++)
-            for (int k = 0; k < _cmp.nComparators(); k++)
-                for (int x = 0; x < _cmp.nLevels(k); x++)
-                    _logMWeights[j][k][x] = Math.log(_mWeights[j][k][x]);
     }
 
     private void drawClasses(Random rng, int[][] classAssign, double[][] classWeightsCond,
@@ -178,7 +171,6 @@ public class UnsupervisedBayes {
     private final MixtureModelPrior _prior;
     private final RecordComparator _cmp;
     private final double[][][] _mWeights, _mWeightsStep;
-    private final double[][][] _logMWeights;
     private final double[] _classWeights, _classWeightsStep;
     private final MixtureModel _model;
 }
