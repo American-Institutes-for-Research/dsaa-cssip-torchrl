@@ -27,11 +27,9 @@ public class UnsupervisedLearner
         _cmp = counter.recordComparator();
 
         _mWeights = new double[nClasses][_cmp.nComparators()][];
-        _logMWeights = new double[nClasses][_cmp.nComparators()][];
         for (int i = 0; i < nClasses; i++) {
             for (int j = 0; j < _cmp.nComparators(); j++) {
                 _mWeights[i][j] = new double[_cmp.nLevels(j)];
-                _logMWeights[i][j] = new double[_cmp.nLevels(j)];
             }
         }
 
@@ -66,17 +64,6 @@ public class UnsupervisedLearner
 
     public int nClasses() {
         return _nClasses;
-    }
-
-    /**
-     * Return the multinomial weights for this model. The multinomial weights
-     * are stored in a three-dimensional array indexed by class, comparator,
-     * and level. For example, the probability that the kth comparator value is
-     * x, conditional on being in the jth class is
-     * <code>multinomialWeights()[j][k][x]</code>.
-     */
-    public double[][][] multinomialWeights() {
-        return _mWeights;
     }
 
     /**
@@ -171,11 +158,6 @@ public class UnsupervisedLearner
 
             oldll = newll;
         }
-
-        for (int j = 0; j < _mWeights.length; j++)
-            for (int k = 0; k < _cmp.nComparators(); k++)
-                for (int x = 0; x < _cmp.nLevels(k); x++)
-                    _logMWeights[j][k][x] = Math.log(_mWeights[j][k][x]);
     }
 
     private double logLikelihood(int[] counts, int[][] patterns, double[][] expectedClass) 
@@ -261,7 +243,6 @@ public class UnsupervisedLearner
     private final boolean[] _matchClass;
     private final RecordComparator _cmp;
     private final double[][][] _mWeights;
-    private final double[][][] _logMWeights;
     private final double[] _classWeights;
     private MixtureModel _model;
 }
