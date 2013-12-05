@@ -11,6 +11,7 @@ import cc.mallet.types.Dirichlet;
 
 public class UnsupervisedBayes {
     public final static int BURN_IN = 500;
+    public final static int N_ITER = 2000;
 
     public UnsupervisedBayes(Random rng, MixtureModelPrior prior, Counter counter) {
         _prior = prior;
@@ -22,29 +23,26 @@ public class UnsupervisedBayes {
 
         // Naming scheme:
         // _mWeights will store the posterior mean weights
-        // _mWeights2 will store the posterior mean square weights during
-        //   computation, and the sample variance after computation is finished
         // _mWeightsStep will store a draw of weights during a single step
         
         int nClasses = _prior.nClasses();
         int nComparators = _cmp.nComparators();
         _mWeights = new double[nClasses][nComparators][];
-        _mWeights2 = new double[nClasses][nComparators][];
         _mWeightsStep = new double[nClasses][nComparators][];
         _logMWeights = new double[nClasses][nComparators][];
 
         for (int j = 0; j < nClasses; j++) {
             for (int k = 0; k < nComparators; k++) {
                 _mWeights[j][k] = new double[_cmp.nLevels(k)];
-                _mWeights2[j][k] = new double[_cmp.nLevels(k)];
                 _mWeightsStep[j][k] = new double[_cmp.nLevels(k)];
                 _logMWeights[j][k] = new double[_cmp.nLevels(k)];
             }
         }
 
         _classWeights = new double[nClasses];
-        _classWeights2 = new double[nClasses];
         _classWeightsStep = new double[nClasses];
+
+        mcmc(rng, counter);
 
         _model = null;
     }
@@ -69,6 +67,17 @@ public class UnsupervisedBayes {
             drawWeights(rng, counts, patterns, classAssign);
             drawClasses(rng, classAssign, classWeightsCond, counts, patterns);
         }
+
+        for (int n = 0; n < N_ITER; n++) {
+            drawWeights(rng, counts, patterns, classAssign);
+            drawClasses(rng, classAssign, classWeightsCond, counts, patterns);
+            updateMeans(n);
+        }
+
+        for (int j = 0; j < _mWeights.length; j++)
+            for (int k = 0; k < _cmp.nComparators(); k++)
+                for (int x = 0; x < _cmp.nLevels(k); x++)
+                    _logMWeights[j][k][x] = Math.log(_mWeights[j][k][x]);
     }
 
     private void drawClasses(Random rng, int[][] classAssign, double[][] classWeightsCond,
@@ -110,10 +119,9 @@ public class UnsupervisedBayes {
     {
 
         double[] newClassWeights = new Dirichlet(classParam).nextDistribution();
-        for (int j = 0; j < _prior.nClasses(); j++)
+        for (int j = 0; j < _prior.nClasses(); j++) {
             _classWeightsStep[j] = newClassWeights[j];
 
-        for (int j = 0; j < _prior.nClasses(); j++) {
             for (int k = 0; k < _cmp.nComparators(); k++) {
                 double[] newWeights = new Dirichlet(mParam[j][k]).nextDistribution();
                 for (int x = 0; x < _cmp.nLevels(k); x++)
@@ -152,10 +160,25 @@ public class UnsupervisedBayes {
         drawWeights(rng, mParam, classParam);
     }
 
+    private void updateMeans(int nStep) {
+        double a = (nStep - 1.0) / nStep;
+        double b = 1.0 / nStep;
+
+        for (int j = 0; j < _prior.nClasses(); j++) {
+            _classWeights[j] = a * _classWeights[j] + b * _classWeightsStep[j];
+
+            for (int k = 0; k < _cmp.nComparators(); k++) {
+                for (int x = 0; x < _cmp.nLevels(k); x++) {
+                    _mWeights[j][k][x] = a * _mWeights[j][k][x] + b * _mWeightsStep[j][k][x];
+                }
+            }
+        }
+    }
+
     private final MixtureModelPrior _prior;
     private final RecordComparator _cmp;
-    private final double[][][] _mWeights, _mWeights2, _mWeightsStep;
+    private final double[][][] _mWeights, _mWeightsStep;
     private final double[][][] _logMWeights;
-    private final double[] _classWeights, _classWeights2, _classWeightsStep;
+    private final double[] _classWeights, _classWeightsStep;
     private final MixtureModel _model;
 }
