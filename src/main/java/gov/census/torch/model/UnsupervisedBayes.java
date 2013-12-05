@@ -13,13 +13,16 @@ public class UnsupervisedBayes {
     public final static int BURN_IN = 500;
     public final static int N_ITER = 2000;
 
-    public UnsupervisedBayes(Random rng, MixtureModelPrior prior, Counter counter) {
+    public UnsupervisedBayes(Random rng, MixtureModelPrior prior, Counter counter,
+                             int burnIn, int nIter) 
+    {
         _prior = prior;
         _cmp = counter.recordComparator();
+        _burnIn = burnIn;
+        _nIter = nIter;
 
         // TODO there should be a test to ensure that the prior is compatible 
         // with the record comparator
-        // TODO user should be able to specify burnin
 
         // Naming scheme:
         // _mWeights will store the posterior mean weights
@@ -42,7 +45,20 @@ public class UnsupervisedBayes {
 
         mcmc(rng, counter);
 
-        _model = null;
+        _model = new MixtureModel(_cmp, _mWeights, _prior.nMatchClasses());
+    }
+
+
+    public UnsupervisedBayes(Random rng, MixtureModelPrior prior, Counter counter) {
+        this(rng, prior, counter, BURN_IN, N_ITER);
+    }
+
+    public double[] classWeights() {
+        return _classWeights;
+    }
+
+    public MixtureModel model() {
+        return _model;
     }
 
     /**
@@ -61,12 +77,12 @@ public class UnsupervisedBayes {
         // draw initial class assignments
         drawClasses(rng, classAssign, classWeightsCond, counts, patterns);
 
-        for (int n = 0; n < BURN_IN; n++) {
+        for (int n = 0; n < _burnIn; n++) {
             drawWeights(rng, counts, patterns, classAssign);
             drawClasses(rng, classAssign, classWeightsCond, counts, patterns);
         }
 
-        for (int n = 0; n < N_ITER; n++) {
+        for (int n = 0; n < _nIter; n++) {
             drawWeights(rng, counts, patterns, classAssign);
             drawClasses(rng, classAssign, classWeightsCond, counts, patterns);
             updateMeans(n);
@@ -168,6 +184,7 @@ public class UnsupervisedBayes {
         }
     }
 
+    private final int _burnIn, _nIter;
     private final MixtureModelPrior _prior;
     private final RecordComparator _cmp;
     private final double[][][] _mWeights, _mWeightsStep;
