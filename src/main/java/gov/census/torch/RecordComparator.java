@@ -2,6 +2,7 @@ package gov.census.torch;
 
 import gov.census.torch.comparators.ExactComparator;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -175,6 +176,26 @@ public class RecordComparator {
     }
 
     /**
+     * The umber of different levels (values) that can be returned by the comparator associated to
+     * the field with the given name.
+     *
+     * @throws IllegalArgumentException if no comparatator is associated to the given field name.
+     */
+    public int nLevels(String name) {
+        if (!_compareFieldIndex.containsKey(name))
+            throw new IllegalArgumentException(String.format("No such field: %s", name));
+
+        return _levels[_compareFieldIndex.get(name)];
+    }
+
+    /**
+     * The names of fields that are examined by this record comparator.
+     */
+    public String[] compareFields() {
+        return _compareFields;
+    }
+
+    /**
      * The array-valued comparison corresponding to the given <code>index</code>.
      *
      * @throws ArrayIndexOutOfBoundsException if the <code>index</code> doesn't corresond to a
@@ -239,6 +260,7 @@ public class RecordComparator {
     {
         _schema1 = schema1;
         _schema2 = schema2;
+        _compareFields = compareFields;
         _nComparators = comparators.length;
         _comparators = comparators;
         _handleBlanks = handleBlanks;
@@ -265,9 +287,15 @@ public class RecordComparator {
         }
 
         _nPatterns = nPatterns;
+
+        _compareFieldIndex = new HashMap<>();
+        for (int i = 0; i < _compareFields.length; i++)
+            _compareFieldIndex.put(_compareFields[i], i);
     }
 
     private final RecordSchema _schema1, _schema2;
+    private final String[] _compareFields;
+    private final HashMap<String, Integer> _compareFieldIndex;
     private final int _nComparators, _nPatterns, _levelOffset;
     private final int[] _fieldIndex1, _fieldIndex2, _levels, _steps;
     private final IFieldComparator[] _comparators;
