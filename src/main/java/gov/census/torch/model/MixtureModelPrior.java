@@ -15,6 +15,7 @@ public class MixtureModelPrior {
             _matchWeights = new HashMap<>();
             _nonmatchWeights = new HashMap<>();
             _classWeightParam = null;
+            _priorWeight = 1.0;
         }
 
         public Builder withField(String name) {
@@ -43,7 +44,7 @@ public class MixtureModelPrior {
                 throw new IllegalArgumentException(msg);
             }
 
-            _matchWeights.get(_currentField).add(weights);
+            _matchWeights.get(_currentField).add(Arrays.copyOf(weights, weights.length));
             return this;
         }
 
@@ -54,12 +55,17 @@ public class MixtureModelPrior {
                 throw new IllegalArgumentException(msg);
             }
 
-            _nonmatchWeights.get(_currentField).add(weights);
+            _nonmatchWeights.get(_currentField).add(Arrays.copyOf(weights, weights.length));
             return this;
         }
 
         public Builder classWeights(double... weights) {
             _classWeightParam = weights;
+            return this;
+        }
+
+        public Builder priorWeight(double d) {
+            _priorWeight = d;
             return this;
         }
 
@@ -72,6 +78,9 @@ public class MixtureModelPrior {
             if (_classWeightParam == null) {
                 throw new IllegalArgumentException("No class weights given");
             }
+
+            for (int j = 0; j < _classWeightParam.length; j++)
+                _classWeightParam[j] *= _priorWeight;
 
             for (int k = 0; k < compareFields.length; k++) {
                 String name = compareFields[k];
@@ -86,7 +95,7 @@ public class MixtureModelPrior {
                 }
 
                 List<double[]> mlist = _matchWeights.get(name);
-                List<double[]> ulist = _matchWeights.get(name);
+                List<double[]> ulist = _nonmatchWeights.get(name);
 
                 if (k == 0) {
                     nMatchClass = mlist.size();
@@ -107,11 +116,17 @@ public class MixtureModelPrior {
                 }
 
                 for (int j = 0; j < nMatchClass; j++) {
-                    mWeightParam[j][k] = mlist.get(j);
+                    double[] ary = mlist.get(j);
+                    for (int x = 0; x < ary.length; x++)
+                        ary[x] *= _priorWeight;
+                    mWeightParam[j][k] = ary;
                 }
 
                 for (int j = 0; j < nNonmatchClass; j++) {
-                    mWeightParam[nMatchClass + j][k] = ulist.get(j);
+                    double[] ary = ulist.get(j);
+                    for (int x = 0; x < ary.length; x++)
+                        ary[x] *= _priorWeight;
+                    mWeightParam[nMatchClass + j][k] = ary;
                 }
             }
 
@@ -125,6 +140,7 @@ public class MixtureModelPrior {
         private String _currentField;
         private int _currentNLevels;
         private double[] _classWeightParam;
+        private double _priorWeight;
     }
 
     public MixtureModelPrior(RecordComparator cmp, double[][][] mWeightParam, 

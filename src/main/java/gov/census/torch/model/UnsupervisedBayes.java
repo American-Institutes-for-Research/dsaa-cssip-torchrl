@@ -11,7 +11,7 @@ import cc.mallet.types.Dirichlet;
 
 public class UnsupervisedBayes {
     public final static int BURN_IN = 500;
-    public final static int N_ITER = 2000;
+    public final static int N_ITER = 1000;
 
     public UnsupervisedBayes(Random rng, MixtureModelPrior prior, Counter counter,
                              int burnIn, int nIter) 
@@ -53,6 +53,14 @@ public class UnsupervisedBayes {
         this(rng, prior, counter, BURN_IN, N_ITER);
     }
 
+    public UnsupervisedBayes(MixtureModelPrior prior, Counter counter, int burnIn, int nIter) {
+        this(new Random(), prior, counter, burnIn, nIter);
+    }
+
+    public UnsupervisedBayes(MixtureModelPrior prior, Counter counter) {
+        this(new Random(), prior, counter, BURN_IN, N_ITER);
+    }
+
     public double[] classWeights() {
         return _classWeights;
     }
@@ -82,7 +90,7 @@ public class UnsupervisedBayes {
             drawClasses(rng, classAssign, classWeightsCond, counts, patterns);
         }
 
-        for (int n = 0; n < _nIter; n++) {
+        for (int n = 1; n <= _nIter; n++) {
             drawWeights(rng, counts, patterns, classAssign);
             drawClasses(rng, classAssign, classWeightsCond, counts, patterns);
             updateMeans(n);
@@ -106,7 +114,7 @@ public class UnsupervisedBayes {
                 classTotal += classWeightsCond[i][j] ;
             }
 
-            for (int j = 0; j < _prior.nClasses(); i++) {
+            for (int j = 0; j < _prior.nClasses(); j++) {
                 classWeightsCond[i][j] /= classTotal;
             }
         }

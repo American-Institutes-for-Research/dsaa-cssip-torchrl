@@ -48,6 +48,13 @@ public class MixtureModel
         return new SemisupervisedLearner(unlabeled, labeled, nMatchClasses, lambda).model();
     }
 
+    /**
+     * Computes posterior mean parameters.
+     */
+    public static MixtureModel posterior(MixtureModelPrior prior, Counter counter) {
+        return new UnsupervisedBayes(prior, counter).model();
+    }
+
     public MixtureModel(RecordComparator comparator, double[][][] mWeights, int nMatchClasses) {
         _cmp = comparator;
         _mWeights = mWeights;
