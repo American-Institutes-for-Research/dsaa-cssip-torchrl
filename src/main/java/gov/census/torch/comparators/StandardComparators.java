@@ -5,13 +5,9 @@ import gov.census.torch.IFieldComparator;
 import java.util.Calendar;
 
 /**
- * Created with IntelliJ IDEA.
- * User: joshua
- * Date: 10/22/13
- * Time: 9:25 PM
- * To change this template use File | Settings | File Templates.
+ * A set of comparators with usable defalut parameters.
  */
-public class StandardComparators {
+public interface StandardComparators {
 
     public final static IFieldComparator EXACT = ExactComparator.INSTANCE;
 
