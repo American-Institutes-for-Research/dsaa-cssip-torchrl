@@ -22,7 +22,7 @@ public class ProratedComparator implements IFieldComparator {
      *      diff &lt; slope[i]  min + intercept[i]
      * for each of the slopes and intercepts that were passed to the constructer.
      *
-     * @return An Integer between 0 (inclusive) and this.nLevels() (exclusive).
+     * @return An integer between 0 (inclusive) and this.nLevels() (exclusive).
      */
     @Override
     public int compare(Field field1, Field field2) {
@@ -37,7 +37,7 @@ public class ProratedComparator implements IFieldComparator {
 
         int matchLevel = 0;
         for (int i = 0; i < slope.length; i++) {
-            if (diff < slope[i] * min + intercept[i]) {
+            if (diff <= slope[i] * min + intercept[i]) {
                 matchLevel = slope.length - i;
                 break;
             }
