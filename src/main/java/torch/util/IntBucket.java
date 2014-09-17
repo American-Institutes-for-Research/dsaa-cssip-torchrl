@@ -1,18 +1,20 @@
 package torch.util;
 
 public class IntBucket
-    implements IBucket<Integer, Integer>
+    implements IBucket<Integer, P<Integer>>
 {
 
     public final static IntBucket INSTANCE = new IntBucket();
 
     @Override
-    public Integer create(Integer i) {
-        return i;
+    public P<Integer> create(Integer i) {
+        P<Integer> ptr = new P<>();
+        ptr.value = i;
+        return ptr;
     }
 
     @Override
-    public Integer accumulate(Integer i, Integer j) {
-        return i + j;
+    public void accumulate(P<Integer> ptr, Integer j) {
+        ptr.value += j;
     }
 }

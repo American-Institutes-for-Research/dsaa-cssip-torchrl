@@ -16,16 +16,14 @@ public class BucketMap<Key, SingleValue, AggregateValue>
         return _map;
     }
 
-    public AggregateValue add(Key key, SingleValue val) {
+    public void add(Key key, SingleValue val) {
         AggregateValue agg;
 
         if (_map.containsKey(key))
-            agg =_bucket.accumulate(_map.get(key), val);
-        else
-            agg = _bucket.create(val);
-
-        _map.put(key, agg);
-        return agg;
+            _bucket.accumulate(_map.get(key), val);
+        else {
+            _map.put(key, _bucket.create(val));
+        }
     }
 
     private final Map<Key, AggregateValue> _map;

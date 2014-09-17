@@ -39,14 +39,6 @@ public class MixtureModel
     }
 
     /**
-     * Uses unsupervised learning to fit a mixture model to unlabeled data.
-     */
-    public static MixtureModel fit(Counter unlabled, int nClasses) 
-    {
-        return new UnsupervisedLearner(unlabled, nClasses).model();
-    }
-
-    /**
      * Uses semisuvervised learning to fit a mixture model to a mix of labeled and unlabeled
      * data.
      */

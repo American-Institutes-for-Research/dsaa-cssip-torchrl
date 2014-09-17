@@ -12,8 +12,7 @@ public class ListBucket<V>
         return list;
     }
 
-    public List<V> accumulate(List<V> list, V val) {
+    public void accumulate(List<V> list, V val) {
         list.add(val);
-        return list;
     }
 }
