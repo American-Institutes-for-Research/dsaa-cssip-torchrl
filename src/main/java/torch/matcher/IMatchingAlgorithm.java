@@ -2,15 +2,14 @@ package torch.matcher;
 
 import torch.Record;
 
-import java.util.List;
 import java.util.TreeMap;
 
 public interface IMatchingAlgorithm {
     /**
      * Computes match scores for the records in the two lists.
      */
-    public TreeMap<Double, List<MatchRecord>>
-        computeScores(List<Record> list1, List<Record> list2);
+    public void computeScores(Iterable<Record> list1, Iterable<Record> list2)
+        throws torch.FormatterException;
 
     /**
      * Returns the number of record comparisons that were performed during the last call to

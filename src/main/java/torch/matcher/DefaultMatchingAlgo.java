@@ -1,5 +1,6 @@
 package torch.matcher;
 
+import torch.FormatterException;
 import torch.IModel;
 import torch.Record;
 import torch.util.BucketMap;
@@ -7,7 +8,6 @@ import torch.util.ListBucket;
 
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * The standard scoring algoirthm.
@@ -17,10 +17,12 @@ public class DefaultMatchingAlgo
 {
 
     /**
-     * Constructs a matching algorithm that will compare records using the given <code>model</code>.
+     * Constructs a matching algorithm that will compare records using the given
+     * <code>model</code> and output results to the formatter.
      */
-    public DefaultMatchingAlgo(IModel model) {
+    public DefaultMatchingAlgo(IModel model, IMatchingFormatter formatter) {
         _model = model;
+        _formatter = formatter;
     }
 
     /**
@@ -28,21 +30,17 @@ public class DefaultMatchingAlgo
      * record in <code>list2</code> is compared to all records in the corresponding block.
      */
     @Override
-    public TreeMap<Double, List<MatchRecord>>
-        computeScores(List<Record> list1, List<Record> list2)
+    public void computeScores(Iterable<Record> list1, Iterable<Record> list2)
+        throws FormatterException
     {
-        return computeScores(Record.block(list1), list2);
+        computeScores(Record.block(list1), list2);
     }
 
-    public TreeMap<Double, List<MatchRecord>>
-        computeScores(Map<String, List<Record>> blocks, List<Record> list)
+    public void computeScores(Map<String, List<Record>> blocks, Iterable<Record> list)
+        throws FormatterException
     {
         _startTime = System.currentTimeMillis();
         _nComparisons = 0;
-
-        BucketMap<Double, MatchRecord, List<MatchRecord>> bmap =
-            new BucketMap<>(new TreeMap<Double, List<MatchRecord>>(),
-                            new ListBucket<MatchRecord>());
 
         for (Record rec: list) {
             String key = rec.blockingKey();
@@ -52,14 +50,13 @@ public class DefaultMatchingAlgo
             } else {
                 for (Record otherRec: blocks.get(key)) {
                     double score = _model.matchScore(rec, otherRec);
-                    bmap.add(score, new MatchRecord(rec, otherRec, score));
+                    _formatter.format(rec, otherRec, score);
                     _nComparisons++;
                 }
             }
         }
 
         _endTime = System.currentTimeMillis();
-        return (TreeMap<Double, List<MatchRecord>>)bmap.map();
     }
 
     /**
@@ -79,6 +76,7 @@ public class DefaultMatchingAlgo
     }
 
     private final IModel _model;
+    private final IMatchingFormatter _formatter;
     private int _nComparisons;
     private long _startTime, _endTime;
 }

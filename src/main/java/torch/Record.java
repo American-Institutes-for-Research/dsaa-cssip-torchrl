@@ -20,7 +20,7 @@ public class Record {
      * @return a <code>HashMap</code> that associates blocking keys to the list of
      * <code>Record</code> with that blocking key.
      */
-    public static Map<String, List<Record>> block(List<Record> list) {
+    public static Map<String, List<Record>> block(Iterable<Record> list) {
         BucketMap<String, Record, List<Record>> acc =
             new BucketMap<>(new HashMap<String, List<Record>>(),
                             new ListBucket<Record>());
