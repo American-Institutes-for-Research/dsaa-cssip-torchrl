@@ -166,6 +166,9 @@ public class UnsupervisedLearner
         int patternLength = _cmp.nComparators();
 
         for (int i = 0; i < patterns.length; i++) {
+            if (counts[i] == 0)
+                continue;
+
             double patll = 0.0;
 
             for (int j = 0; j < _nClasses; j++) {
