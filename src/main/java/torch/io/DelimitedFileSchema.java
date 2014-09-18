@@ -33,7 +33,8 @@ public class DelimitedFileSchema
             _header = false;
             _columns = new LinkedList<>(); 
             _blockingFields = new LinkedList<>(); 
-            _idFields = new LinkedList<>();
+            _seqField = null;
+            _idField = null;
             _blankIndicator = BLANK_INDICATOR;
         }
 
@@ -71,15 +72,13 @@ public class DelimitedFileSchema
             return this;
         }
 
-        public Builder idField(String name) {
-            _idFields.add(name);
+        public Builder seqField(String name) {
+            _seqField = name;
             return this;
         }
 
-        public Builder idFields(String... names) {
-            for (String name: names)
-                _idFields.add(name);
-
+        public Builder idField(String name) {
+            _idField = name;
             return this;
         }
 
@@ -91,8 +90,7 @@ public class DelimitedFileSchema
         public DelimitedFileSchema build() {
             String[] columns = _columns.toArray(new String[0]);
             String[] blockingFields = _blockingFields.toArray(new String[0]);
-            String[] idFields = _idFields.toArray(new String[0]);
-            RecordSchema schema = new RecordSchema(columns, blockingFields, idFields);
+            RecordSchema schema = new RecordSchema(columns, blockingFields, _seqField, _idField);
 
             CSVStrategy strategy = 
                 new CSVStrategy(_delimiter, QUOTE_CHAR, COMMENT_CHAR, _header, IGNORE_EMPTY_LINES);
@@ -102,8 +100,8 @@ public class DelimitedFileSchema
 
         private char _delimiter;
         private boolean _header;
-        private LinkedList<String> _columns, _blockingFields, _idFields;
-        private String _blankIndicator;
+        private final LinkedList<String> _columns, _blockingFields;
+        private String _seqField, _idField, _blankIndicator;
     }
 
     @Override

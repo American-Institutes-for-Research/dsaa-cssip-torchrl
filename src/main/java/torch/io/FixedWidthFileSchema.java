@@ -18,16 +18,16 @@ public class FixedWidthFileSchema implements IRecordLoader
         public Builder() {
             _columns = new LinkedList<>();
             _blockingFields = new LinkedList<>();
-            _idFields = new LinkedList<>();
             _columnStart = new LinkedList<>();
             _columnOff = new LinkedList<>();
+            _seqField = null;
+            _idField = null;
         }
 
         public FixedWidthFileSchema build() {
             String[] columns = _columns.toArray(new String[0]);
             String[] blockingFields = _blockingFields.toArray(new String[0]);
-            String[] idFields = _idFields.toArray(new String[0]);
-            RecordSchema schema = new RecordSchema(columns, blockingFields, idFields);
+            RecordSchema schema = new RecordSchema(columns, blockingFields, _seqField, _idField);
 
             int[] columnStart = new int[_columnStart.size()];
             int[] columnOff = new int[_columnStart.size()];
@@ -58,20 +58,20 @@ public class FixedWidthFileSchema implements IRecordLoader
             return this;
         }
 
+        public Builder seqField(String name) {
+            _seqField = name;
+            return this;
+        }
+
+
         public Builder idField(String name) {
-            _idFields.add(name);
+            _idField = name;
             return this;
         }
 
-        public Builder idFields(String... names) {
-            for (String name: names)
-                _idFields.add(name);
-
-            return this;
-        }
-
-        private final LinkedList<String> _columns, _blockingFields, _idFields;
+        private final LinkedList<String> _columns, _blockingFields;
         private final LinkedList<Integer> _columnStart, _columnOff;
+        private String _seqField, _idField;
     }
 
 

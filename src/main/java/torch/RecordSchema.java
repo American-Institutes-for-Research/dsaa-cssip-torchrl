@@ -20,17 +20,19 @@ public class RecordSchema
      * @param columns an array of column names corresponding to incoming data.
      * @param blockingFields an array of blocking field names, should be a subset of
      * <code>columns</code>.
-     * @param idFields an array of id field names, should be a subset of <code>columns</code>.
+     * @param seqField name of the sequence field. Should appear in <code>columns</code>.
+     * @param idField name of the ID field. Should appear in <code>columns</code>.
      *
      * @throws IllegalArgumentException if <code>blockingFields</code> or <code>idFields</code>
      * contains a name that doesn't appear in <code>columns</code>.
      */
-    public RecordSchema(String[] columns, String[] blockingFields, String[] idFields) 
+    public RecordSchema(String[] columns, String[] blockingFields, String seqField, String idField) 
     {
         _columns = columns;
         _blockingFields = blockingFields;
-        _idFields = idFields;
-        _hasId = (idFields.length > 0);
+        _seqField = seqField;
+        _idField = idField;
+        _hasId = (idField != null);
 
         _columnIndex = new HashMap<>();
         int i = 0;
@@ -40,17 +42,24 @@ public class RecordSchema
         ArrayList<String> fields = new ArrayList<>(Arrays.asList(columns));
         for (String name: blockingFields) {
             if (_columnIndex.get(name) == null)
-                throw new IllegalArgumentException("no such column: " + name);
+                throw new IllegalArgumentException("no such column (blocking): " + name);
 
             fields.remove(name);
         }
 
-        for (String name: idFields) {
-            if (_columnIndex.get(name) == null)
-                throw new IllegalArgumentException("no such column: " + name);
+        if (_seqField == null) {
+            _seqValue = 0;
+        } else {
+            if (_columnIndex.get(_seqField) == null)
+                throw new IllegalArgumentException("no such column (seq): " + _seqField);
 
-            fields.remove(name);
+            fields.remove(_seqField);
         }
+
+        if (_hasId && _columnIndex.get(_idField) == null)
+            throw new IllegalArgumentException("no such column (id): " + _idField);
+        
+        fields.remove(_idField);
 
         _fields = fields.toArray(new String[0]);
         
@@ -75,19 +84,27 @@ public class RecordSchema
             map.put(_columns[i], columns[i]);
 
         StringBuilder blockingKey = new StringBuilder();
-        StringBuilder id = new StringBuilder();
         Field[] fields = new Field[_fields.length];
 
         for (String name: _blockingFields)
             blockingKey.append(map.get(name));
 
-        for (String name: _idFields)
-            id.append(map.get(name));
+        String id = null;
+
+        if (_hasId)
+            id = map.get(_idField);
+
+        String seq;
+
+        if (_seqField == null)
+            seq = "" + _seqValue++;
+        else
+            seq = map.get(_seqField);
 
         for (int i = 0; i < _fields.length; i++)
             fields[i] = new Field(map.get(_fields[i]));
 
-        return new Record(this, blockingKey.toString(), id.toString(), fields);
+        return new Record(this, blockingKey.toString(), seq, id, fields);
     }
 
     /**
@@ -120,6 +137,8 @@ public class RecordSchema
     }
 
     private final HashMap<String, Integer> _columnIndex, _fieldIndex;
-    private final String[] _columns, _fields, _blockingFields, _idFields;
+    private final String[] _columns, _fields, _blockingFields;
+    private final String _idField, _seqField;
     private final boolean _hasId;
+    private int _seqValue;
 }

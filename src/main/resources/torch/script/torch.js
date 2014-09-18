@@ -80,10 +80,8 @@ ScriptSchema = {
                 "type": "array",
                 "items": {"type": "string"}
             },
-            "idFields": {
-                "type": "array",
-                "items": {"type": "string"}
-            },
+            "seqField": {"type": "string"},
+            "idField": {"type": "string"}
         },
         "required": ["columns"]
     },
@@ -100,10 +98,8 @@ ScriptSchema = {
                 "type": "array",
                 "items": {"type": "string"}
             },
-            "idFields": {
-                "type": "array",
-                "items": {"type": "string"}
-            },
+            "seqField": {"type": "string"},
+            "idField": {"type": "string"},
             "delimiter": {"type": "string"},
             "header": {"type": "boolean"}
         },
@@ -167,11 +163,14 @@ Script = {
             }
         }
 
+        var seqField = obj['seqField'];
+        if (__isDefined(seqField)) {
+            b.seqField(seqField);
+        }
+
         var idFields = obj['idFields'];
-        if (__isDefined(idFields)) {
-            for (var i = 0; i < idFields.length; i++) {
-                b.idField(idFields[i]);
-            }
+        if (__isDefined(idField)) {
+            b.idField(idField);
         }
 
         return b.build();
@@ -195,11 +194,14 @@ Script = {
             }
         }
 
-        var idFields = obj['idFields'];
-        if (__isDefined(idFields)) {
-            for (var i = 0; i < idFields.length; i++) {
-                b.idField(idFields[i]);
-            }
+        var seqField = obj['seqField'];
+        if (__isDefined(seqField)) {
+            b.seqField(seqField);
+        }
+
+        var idField = obj['idField'];
+        if (__isDefined(idField)) {
+            b.idField(idField);
         }
 
         var d = obj['delimiter'];

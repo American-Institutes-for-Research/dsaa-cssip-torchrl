@@ -18,7 +18,7 @@ public class RecordTest {
         schema = new RecordSchema(
                 new String[] {"key", "first", "last"},
                 new String[] {"key"},
-                new String[0]);
+                null, null);
 
         rec1 = schema.newRecord(new String[] {"asdf", "George", "Washington"});
         rec2 = schema.newRecord(new String[] {"qwer", "John", "Adams"});

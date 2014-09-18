@@ -45,6 +45,13 @@ public class Record {
     }
 
     /**
+     * Return the sequence field.
+     */
+    public String seq() {
+        return _seq;
+    }
+
+    /**
      * Returns the unique identifier for this field. Returns an empty <code>String</code> if the
      * <code>Record</code> doesn't have a unique identifier.
      */
@@ -69,10 +76,11 @@ public class Record {
     /**
      * Construct a new <code>Record</code> from the given values.
      */
-    protected Record(RecordSchema schema, String blockingKey, String id, Field[] fields) 
+    protected Record(RecordSchema schema, String blockingKey, String seq, String id, Field[] fields) 
     {
         _schema = schema;
         _blockingKey = blockingKey;
+        _seq = seq;
         _id = id;
         _fields = Arrays.copyOf(fields, fields.length);
     }
@@ -117,7 +125,7 @@ public class Record {
     }
 
     private final RecordSchema _schema;
-    private final String _blockingKey;
+    private final String _blockingKey, _seq;
     private final String _id;
     private final Field[] _fields;
 }
