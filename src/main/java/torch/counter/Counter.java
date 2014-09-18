@@ -3,6 +3,7 @@ package torch.counter;
 import torch.Record;
 import torch.RecordComparator;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -15,7 +16,7 @@ public class Counter {
     /**
      * Count the comparison patterns for blocked pairs in the two lists.
      */
-    public static Counter count(RecordComparator cmp, List<Record> list1, List<Record> list2)
+    public static Counter count(RecordComparator cmp, Iterable<Record> list1, Iterable<Record> list2)
     {
         IncrementalCounter inc = new IncrementalCounter(cmp);
         Map<String, List<Record>> blocks = Record.block(list1);
@@ -28,7 +29,7 @@ public class Counter {
             } else {
                 List<Record> thisBlock = blocks.get(key);
                 for (Record otherRec: thisBlock)
-                    inc.add(rec, otherRec);
+                    inc.add(otherRec, rec);
             }
         }
 
@@ -37,19 +38,14 @@ public class Counter {
 
     /**
      * Counts truth patterns. This method uses blocking to bring together pairs, and so may not
-     * count every true match.
+     * count every true match. Both list schemas should have ID fields.
      *
      * @return a length 2 Counter array, in which the first element represents the observed patterns
      * among match pairs, and the second element represents observed patterns amont nonmatch pairs.
      */
-    public static Counter[] countTruth(RecordComparator cmp, List<Record> list1, List<Record> list2) {
+    public static Counter[] countTruth(RecordComparator cmp, Iterable<Record> list1, Iterable<Record> list2) {
         IncrementalCounter trueMatch = new IncrementalCounter(cmp);
         IncrementalCounter trueNonmatch = new IncrementalCounter(cmp);
-
-        if (list1.size() > 0 && list2.size() > 0) {
-            if (!(list1.get(0).schema().hasId() && list2.get(0).schema().hasId()))
-                throw new IllegalArgumentException("Records must have ID fields");
-        }
 
         Map<String, List<Record>> blocks = Record.block(list1);
 

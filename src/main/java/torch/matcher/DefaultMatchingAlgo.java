@@ -49,8 +49,8 @@ public class DefaultMatchingAlgo
                 continue;
             } else {
                 for (Record otherRec: blocks.get(key)) {
-                    double score = _model.matchScore(rec, otherRec);
-                    _formatter.format(rec, otherRec, score);
+                    double score = _model.matchScore(otherRec, rec);
+                    _formatter.format(otherRec, rec, score);
                     _nComparisons++;
                 }
             }
