@@ -33,5 +33,20 @@ public class MatchRecordEntryConverter
         return row;
     }
 
+    public String[] header() {
+        String[] header = new String[3 + 2 * _cmp.nComparators()];
+        header[0] = "score";
+        header[1] = "seq_1";
+        header[2] = "seq_2";
+        String[] fields = _cmp.compareFields();
+
+        for (int i = 0; i < _cmp.nComparators(); i++) {
+            header[2 * i + 3] = fields[i] + "_1";
+            header[2 * i + 4] = fields[i] + "_2";
+        }
+
+        return header;
+    }
+
     private final RecordComparator _cmp;
 }

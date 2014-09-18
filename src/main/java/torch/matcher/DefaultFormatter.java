@@ -7,16 +7,34 @@ import java.io.Writer;
 
 import com.googlecode.jcsv.CSVStrategy;
 import com.googlecode.jcsv.writer.CSVWriter;
+import com.googlecode.jcsv.writer.internal.CSVColumnJoinerImpl;
 import com.googlecode.jcsv.writer.internal.CSVWriterBuilder;
 
 public class DefaultFormatter 
     implements IMatchingFormatter
 {
 
-    public DefaultFormatter(Writer writer, RecordComparator cmp, double cutoff) {
+    public DefaultFormatter(Writer writer, RecordComparator cmp, double cutoff) 
+        throws torch.FormatterException
+    {
+        MatchRecordEntryConverter converter = new MatchRecordEntryConverter(cmp);
+        CSVColumnJoinerImpl joiner = new CSVColumnJoinerImpl();
+
+        try {
+            // write the header row
+            String header = 
+                joiner.joinColumns(converter.header(), CSVStrategy.UK_DEFAULT);
+            writer.write(header);
+            writer.write('\n');
+            writer.flush();
+        }
+        catch (java.io.IOException e) {
+            throw new torch.FormatterException("There was a problem formattig the output", e);
+        }
+
         _csvWriter = 
             new CSVWriterBuilder<MatchRecord>(writer)
-            .entryConverter(new MatchRecordEntryConverter(cmp))
+            .entryConverter(converter)
             .strategy(CSVStrategy.UK_DEFAULT)
             .build();
 
