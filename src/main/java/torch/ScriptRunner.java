@@ -30,9 +30,18 @@ public class ScriptRunner {
             .getResource("torch/script/torch.js");
 
         ScriptEngineManager manager = new ScriptEngineManager();
-        ScriptEngine engine = manager.getEngineByName("rhino");
+        ScriptEngine engine = manager.getEngineByName("javascript");
 
         try {
+
+            String version = System.getProperty("java.version");
+            if (version.startsWith("1.8")) {
+                // assume nashorn
+                engine.eval("load('nashorn:mozilla_compat.js')");
+            } else {
+                // assume rhino
+            }
+
             InputStreamReader reader = 
                 new InputStreamReader(tv4.openStream());
             engine.put(ScriptEngine.FILENAME, tv4.toString());
