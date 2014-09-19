@@ -3,8 +3,6 @@ package torch.matcher;
 import torch.FormatterException;
 import torch.IModel;
 import torch.Record;
-import torch.util.BucketMap;
-import torch.util.ListBucket;
 
 import java.util.List;
 import java.util.Map;

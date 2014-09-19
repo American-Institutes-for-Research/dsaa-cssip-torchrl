@@ -1,10 +1,10 @@
 package torch.util;
 
-public class IntBucket
-    implements IBucket<Integer, P<Integer>>
+public class IntAccumulator
+    implements IAccumulate<Integer, P<Integer>>
 {
 
-    public final static IntBucket INSTANCE = new IntBucket();
+    public final static IntAccumulator INSTANCE = new IntAccumulator();
 
     @Override
     public P<Integer> create(Integer i) {

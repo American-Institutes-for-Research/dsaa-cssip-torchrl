@@ -3,8 +3,8 @@ package torch.util;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ListBucket<V>
-    implements IBucket<V, List<V>>
+public class ListAccumulator<V>
+    implements IAccumulate<V, List<V>>
 {
     public List<V> create(V init) {
         LinkedList<V> list = new LinkedList<>();

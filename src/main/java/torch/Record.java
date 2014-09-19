@@ -1,7 +1,7 @@
 package torch;
 
-import torch.util.BucketMap;
-import torch.util.ListBucket;
+import torch.util.AccumulatorMap;
+import torch.util.ListAccumulator;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,13 +21,15 @@ public class Record {
      * <code>Record</code> with that blocking key.
      */
     public static Map<String, List<Record>> block(Iterable<Record> list) {
-        BucketMap<String, Record, List<Record>> acc =
-            new BucketMap<>(new HashMap<String, List<Record>>(),
-                            new ListBucket<Record>());
+        HashMap<String, List<Record>> map = new HashMap<>();
+
+        AccumulatorMap<String, Record, List<Record>> acc =
+            new AccumulatorMap<>(map, new ListAccumulator<Record>());
+
         for (Record rec: list)
             acc.add(rec.blockingKey(), rec);
 
-        return acc.map();
+        return map;
     }
 
     /**
