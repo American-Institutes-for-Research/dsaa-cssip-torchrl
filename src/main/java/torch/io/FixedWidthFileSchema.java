@@ -132,6 +132,17 @@ public class FixedWidthFileSchema implements IRecordLoader
         return _schema;
     }
 
+    /**
+     * Construct a new record from the given line
+     */
+    public Record newRecord(String line) {
+        String[] columns = new String[_columnStart.length];
+        for (int i = 0; i < _columnStart.length; i++)
+            columns[i] = line.substring(_columnStart[i], _columnOff[i]);
+
+        return _schema.newRecord(columns);
+    }
+
     private FixedWidthFileSchema(RecordSchema schema, int[] columnStart, int[] columnOff) {
         _schema = schema;
         _columnStart = columnStart;

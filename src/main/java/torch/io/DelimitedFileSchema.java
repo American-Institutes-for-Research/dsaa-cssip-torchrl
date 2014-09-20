@@ -170,6 +170,10 @@ public class DelimitedFileSchema
         return _schema.newRecord(columns);
     }
 
+    public CSVStrategy csvStrategy() {
+        return _strategy;
+    }
+
     private DelimitedFileSchema(RecordSchema schema, CSVStrategy strategy, String blankIndicator) {
         _schema = schema;
         _strategy = strategy;
