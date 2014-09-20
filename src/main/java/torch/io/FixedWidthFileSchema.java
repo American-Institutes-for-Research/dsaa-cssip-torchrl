@@ -85,6 +85,16 @@ public class FixedWidthFileSchema implements IRecordLoader
         }
         catch(IOException e) {
             String msg = "There was a problem opening the file: " + file;
+
+            if (in != null) {
+                try {
+                    in.close();
+                }
+                catch(IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+
             throw new RecordLoadingException(msg, e);
         }
 
@@ -102,6 +112,16 @@ public class FixedWidthFileSchema implements IRecordLoader
         catch (IOException e) {
             String msg = "There was a problem reading from the file: " + file;
             throw new RecordLoadingException(msg, e);
+        }
+        finally {
+            if (in != null) {
+                try {
+                    in.close();
+                }
+                catch(IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
 
         return list;

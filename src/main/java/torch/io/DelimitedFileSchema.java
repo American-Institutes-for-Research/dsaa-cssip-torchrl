@@ -114,6 +114,15 @@ public class DelimitedFileSchema
         }
         catch(IOException e) {
             String msg = "There was a problem opening the file: " + file;
+
+            if (rdr != null) {
+                try {
+                    rdr.close();
+                }
+                catch(IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
             throw new RecordLoadingException(msg, e);
         }
 
@@ -131,6 +140,16 @@ public class DelimitedFileSchema
         catch(IOException e) {
             String msg = "There was a problem reading from the file: " + file;
             throw new RecordLoadingException(msg, e);
+        }
+        finally {
+            if (rdr != null) {
+                try {
+                    rdr.close();
+                }
+                catch(IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
 
         return list;
