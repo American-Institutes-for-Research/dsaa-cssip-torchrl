@@ -1,5 +1,6 @@
 package torch.io;
 
+import torch.IRecordIterator;
 import torch.Record;
 import torch.RecordLoadingException;
 import torch.RecordSchema;
@@ -105,54 +106,16 @@ public class DelimitedFileSchema
     }
 
     @Override
-    public List<Record> load(String file) 
+    public IRecordIterator load(String file) 
         throws RecordLoadingException
     {
-        FileReader rdr = null;
         try {
-            rdr = new FileReader(file);
+            return new DelimitedFileIterator(this, file);
         }
         catch(IOException e) {
             String msg = "There was a problem opening the file: " + file;
-
-            if (rdr != null) {
-                try {
-                    rdr.close();
-                }
-                catch(IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
             throw new RecordLoadingException(msg, e);
         }
-
-        CSVReader<Record> csv =
-            new CSVReaderBuilder<Record>(rdr)
-            .strategy(_strategy)
-            .entryParser(this)
-            .build();
-
-        List<Record> list = null;
-
-        try {
-            list = csv.readAll();
-        }
-        catch(IOException e) {
-            String msg = "There was a problem reading from the file: " + file;
-            throw new RecordLoadingException(msg, e);
-        }
-        finally {
-            if (rdr != null) {
-                try {
-                    rdr.close();
-                }
-                catch(IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-
-        return list;
     }
 
     @Override

@@ -11,7 +11,7 @@ import static org.hamcrest.CoreMatchers.*;
 public class RecordTest {
     private RecordSchema schema;
     private Record rec1, rec2, rec3, rec4, rec5;
-    private List<Record> list;
+    private IRecordIterator list;
 
     @Before 
     public void setup() {
@@ -26,17 +26,23 @@ public class RecordTest {
         rec4 = schema.newRecord(new String[] {"qwer", "James", "Madison"});
         rec5 = schema.newRecord(new String[] {"asdf", "James", "Monroe"});
 
-        list = new LinkedList<>();
-        list.add(rec1);
-        list.add(rec2);
-        list.add(rec3);
-        list.add(rec4);
-        list.add(rec5);
+        LinkedList<Record> ll = new LinkedList<>();
+        ll.add(rec1);
+        ll.add(rec2);
+        ll.add(rec3);
+        ll.add(rec4);
+        ll.add(rec5);
+        list = new RecordIterator(ll);
     }
 
     @Test
     public void testBlocking() {
-        Map<String, List<Record>> blocks = Record.block(list);
+        Map<String, List<Record>> blocks = null;
+        try {
+            blocks = Record.block(list);
+        }
+        catch(RecordIteratorException e) {}
+
         assertThat(blocks.size(), is(2));
         assertThat(blocks.get("asdf").size(), is(3));
         assertThat(blocks.get("qwer").size(), is(2));

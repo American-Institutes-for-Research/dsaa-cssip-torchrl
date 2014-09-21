@@ -1,20 +1,17 @@
 package torch;
 
-import java.util.List;
-
 /**
  * An object which loads {@link Record}s from an external source.
  */
 public interface IRecordLoader {
     /**
-     * Loads records from the specified <code>source</code> and returns them as
-     * a <code>List</code>.
+     * Returns an iterator which iterates over records from the given source.
      */
-    public List<Record> load(String source)
+    public IRecordIterator load(String source)
         throws RecordLoadingException;
 
     /**
-     * The {@link RecordSchema} used to construct the returned <code>Record</code>s.
+     * The {@link RecordSchema} used by the iterator to construct {@link Record}s.
      */
     public RecordSchema schema();
 }

@@ -1,7 +1,7 @@
 package torch.matcher;
 
-import torch.FormatterException;
 import torch.IModel;
+import torch.IRecordIterator;
 import torch.Record;
 
 import java.util.List;
@@ -28,19 +28,20 @@ public class DefaultMatchingAlgo
      * record in <code>list2</code> is compared to all records in the corresponding block.
      */
     @Override
-    public void computeScores(Iterable<Record> list1, Iterable<Record> list2)
-        throws FormatterException
+    public void computeScores(IRecordIterator list1, IRecordIterator list2)
+        throws torch.FormatterException, torch.RecordIteratorException
     {
         computeScores(Record.block(list1), list2);
     }
 
-    public void computeScores(Map<String, List<Record>> blocks, Iterable<Record> list)
-        throws FormatterException
+    public void computeScores(Map<String, List<Record>> blocks, IRecordIterator list)
+        throws torch.FormatterException, torch.RecordIteratorException
     {
         _startTime = System.currentTimeMillis();
         _nComparisons = 0;
 
-        for (Record rec: list) {
+        Record rec;
+        while ((rec = list.next()) != null) {
             String key = rec.blockingKey();
 
             if (!blocks.containsKey(key)) {

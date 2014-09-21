@@ -1,5 +1,6 @@
 package torch.counter;
 
+import torch.IRecordIterator;
 import torch.Record;
 import torch.RecordComparator;
 
@@ -16,12 +17,14 @@ public class Counter {
     /**
      * Count the comparison patterns for blocked pairs in the two lists.
      */
-    public static Counter count(RecordComparator cmp, Iterable<Record> list1, Iterable<Record> list2)
+    public static Counter count(RecordComparator cmp, IRecordIterator list1, IRecordIterator list2)
+        throws torch.RecordIteratorException
     {
         IncrementalCounter inc = new IncrementalCounter(cmp);
         Map<String, List<Record>> blocks = Record.block(list1);
 
-        for (Record rec: list2) {
+        Record rec;
+        while ((rec = list2.next()) != null) {
             String key = rec.blockingKey();
 
             if (!blocks.containsKey(key)) {
@@ -37,19 +40,23 @@ public class Counter {
     }
 
     /**
-     * Counts truth patterns. This method uses blocking to bring together pairs, and so may not
-     * count every true match. Both list schemas should have ID fields.
+     * Counts truth patterns. This method uses blocking to bring together pairs, and so
+     * may not count every true match. Both list schemas should have ID fields.
      *
-     * @return a length 2 Counter array, in which the first element represents the observed patterns
-     * among match pairs, and the second element represents observed patterns amont nonmatch pairs.
+     * @return a length 2 Counter array, in which the first element represents the
+     * observed patterns among match pairs, and the second element represents observed
+     * patterns amont nonmatch pairs.
      */
-    public static Counter[] countTruth(RecordComparator cmp, Iterable<Record> list1, Iterable<Record> list2) {
+    public static Counter[] countTruth(RecordComparator cmp, IRecordIterator list1, IRecordIterator list2) 
+        throws torch.RecordIteratorException
+    {
         IncrementalCounter trueMatch = new IncrementalCounter(cmp);
         IncrementalCounter trueNonmatch = new IncrementalCounter(cmp);
 
         Map<String, List<Record>> blocks = Record.block(list1);
 
-        for (Record rec: list2) {
+        Record rec;
+        while ((rec = list2.next()) != null) {
             String key = rec.blockingKey();
 
             if (!blocks.containsKey(key)) {
@@ -58,9 +65,9 @@ public class Counter {
                 List<Record> thisBlock = blocks.get(key);
                 for (Record otherRec: thisBlock) {
                     if (rec.id().equals(otherRec.id()))
-                        trueMatch.add(rec, otherRec);
+                        trueMatch.add(otherRec, rec);
                     else
-                        trueNonmatch.add(rec, otherRec);
+                        trueNonmatch.add(otherRec, rec);
                 }
             }
         }

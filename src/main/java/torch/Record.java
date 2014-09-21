@@ -20,13 +20,16 @@ public class Record {
      * @return a <code>HashMap</code> that associates blocking keys to the list of
      * <code>Record</code> with that blocking key.
      */
-    public static Map<String, List<Record>> block(Iterable<Record> list) {
+    public static Map<String, List<Record>> block(IRecordIterator list) 
+        throws RecordIteratorException
+    {
         HashMap<String, List<Record>> map = new HashMap<>();
 
         AccumulatorMap<String, Record, List<Record>> acc =
             new AccumulatorMap<>(map, new ListAccumulator<Record>());
 
-        for (Record rec: list)
+        Record rec;
+        while ((rec = list.next()) != null)
             acc.add(rec.blockingKey(), rec);
 
         return map;

@@ -1,6 +1,7 @@
 package torch.io;
 
 import torch.IRecordLoader;
+import torch.IRecordIterator;
 import torch.Record;
 import torch.RecordLoadingException;
 import torch.RecordSchema;
@@ -76,55 +77,16 @@ public class FixedWidthFileSchema implements IRecordLoader
 
 
     @Override
-    public List<Record> load(String file)
+    public IRecordIterator load(String file)
         throws RecordLoadingException
     {
-        BufferedReader in = null;
         try {
-            in = new BufferedReader(new FileReader(file));
+            return new FixedWidthFileIterator(this, file);
         }
         catch(IOException e) {
             String msg = "There was a problem opening the file: " + file;
-
-            if (in != null) {
-                try {
-                    in.close();
-                }
-                catch(IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-
             throw new RecordLoadingException(msg, e);
         }
-
-        LinkedList<Record> list = new LinkedList<>();
-    
-        try {
-            String line;
-            while ((line = in.readLine()) != null) {
-                String[] columns = new String[_columnStart.length];
-                for (int i = 0; i < _columnStart.length; i++)
-                    columns[i] = line.substring(_columnStart[i], _columnOff[i]);
-                list.add(_schema.newRecord(columns));
-            }
-        }
-        catch (IOException e) {
-            String msg = "There was a problem reading from the file: " + file;
-            throw new RecordLoadingException(msg, e);
-        }
-        finally {
-            if (in != null) {
-                try {
-                    in.close();
-                }
-                catch(IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-
-        return list;
     }
 
     @Override

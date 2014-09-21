@@ -1,6 +1,7 @@
 package torch.matcher;
 
 import torch.IModel;
+import torch.IRecordIterator;
 import torch.Record;
 
 import java.io.FileWriter;
@@ -17,9 +18,9 @@ public class Matcher {
      * Performs matching on the given lists using a single-threaded algorithm.
      */
     public static void match(String filename, IModel model, 
-                             Iterable<Record> list1, Iterable<Record> list2,
+                             IRecordIterator list1, IRecordIterator list2,
                              double cutoff) 
-        throws java.io.IOException, torch.FormatterException
+        throws java.io.IOException, torch.FormatterException, torch.RecordIteratorException
     {
         FileWriter writer = new FileWriter(filename);
         DefaultFormatter formatter = 
